@@ -1,4 +1,6 @@
-//! Algorithms to check for filtration-domination.
+//! Algorithms and utilities to work with bifiltered graphs. In particular,
+//! algorithms to remove edges from a bifiltered graph while maintaining the topological
+//! properties of its clique complex, see [crate::removal].
 use num::{Bounded, Zero};
 use std::cmp::Ordering;
 use std::fmt::Formatter;
@@ -62,7 +64,7 @@ pub trait CriticalGrade:
     fn parameters() -> usize;
 }
 
-/// A 1-critical critical grade. The default order is lexicographic.
+/// A 1-critical grade. The default order is lexicographic.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct OneCriticalGrade<VF, const N: usize>(pub [VF; N]);
 

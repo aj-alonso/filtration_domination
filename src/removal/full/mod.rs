@@ -9,6 +9,10 @@ use crate::{CriticalGrade, OneCriticalGrade};
 use std::collections::BTreeSet;
 use std::time::Duration;
 
+/// Go through the given edge list, and check each edge for filtration-domination.
+/// If it is filtration-dominated we remove them.
+/// The order in which we go through the edges is the given in `order`.
+/// Returns a reduced edge list.
 pub fn remove_filtration_dominated<VF: Value>(
     edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
     order: EdgeOrder,
@@ -16,6 +20,9 @@ pub fn remove_filtration_dominated<VF: Value>(
     remove_filtration_dominated_timed(edge_list, order, None)
 }
 
+/// As [remove_filtration_dominated], but if we take more than the time given in `max_time` then
+/// execution stops and a clone of the original list is returned.
+/// If `max_time` is None then no timeout is applied.
 pub fn remove_filtration_dominated_timed<VF: Value>(
     edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
     order: EdgeOrder,
@@ -40,7 +47,7 @@ pub fn remove_filtration_dominated_timed<VF: Value>(
     for edge in edge_list.edge_iter() {
         if let Some(max_time) = max_time {
             if start.elapsed() > max_time {
-                break;
+                return edge_list.clone();
             }
         }
         if is_filtration_dominated(&adjacency_matrix, edge) {

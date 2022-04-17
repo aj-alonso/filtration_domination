@@ -5,6 +5,8 @@ use crate::CriticalGrade;
 use std::cmp::Ordering;
 use std::time::Duration;
 
+/// As [crate::removal::remove_filtration_dominated], but instead of filtration-dominated edges
+/// this function checks for strongly filtration-dominated edges.
 pub fn remove_strongly_filtration_dominated<G: CriticalGrade>(
     edge_list: &mut EdgeList<FilteredEdge<G>>,
     order: EdgeOrder,
@@ -12,6 +14,9 @@ pub fn remove_strongly_filtration_dominated<G: CriticalGrade>(
     remove_strongly_filtration_dominated_timed(edge_list, order, None)
 }
 
+/// As [remove_strongly_filtration_dominated], but if we take more than the time given in `max_time` then
+/// execution stops and a clone of the original list is returned.
+/// If `max_time` is None then no timeout is applied.
 pub fn remove_strongly_filtration_dominated_timed<G: CriticalGrade>(
     edge_list: &mut EdgeList<FilteredEdge<G>>,
     order: EdgeOrder,
@@ -64,7 +69,7 @@ fn is_strongly_filtration_dominated<G: CriticalGrade>(
     false
 }
 
-pub(crate) fn is_subset<G: CriticalGrade, I, J>(left: I, mut right: J) -> bool
+fn is_subset<G: CriticalGrade, I, J>(left: I, mut right: J) -> bool
 where
     I: Iterator<Item = (usize, G)>,
     J: Iterator<Item = (usize, G)>,

@@ -1,3 +1,4 @@
+//! Edges, edge lists, and associated functions.
 use crate::{OneCriticalGrade, Value};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
@@ -27,7 +28,7 @@ pub trait Edge {
     }
 }
 
-/// Undirected edge.
+/// Edge that is not filtered.
 #[derive(Debug, Clone, Copy)]
 pub struct BareEdge(pub usize, pub usize);
 
@@ -83,6 +84,7 @@ impl std::fmt::Display for BareEdge {
     }
 }
 
+/// An edge with its associated critical grade.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FilteredEdge<G> {
     pub grade: G,
@@ -149,7 +151,7 @@ impl<G> From<FilteredEdge<G>> for BareEdge {
     }
 }
 
-/// A graph represented as a list of edges, whose vertices are in the range 0..n_vertices.
+/// A graph represented as a list of edges, whose vertices are in the range 0..`n_vertices`.
 /// No self-loops are allowed.
 #[derive(Debug, Clone)]
 pub struct EdgeList<E> {

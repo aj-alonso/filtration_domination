@@ -2,10 +2,10 @@ use crate::Value;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 
-// A half-open interval.
+/// A half-open interval.
 pub type Interval<VF> = (VF, VF);
 
-// A vertical or horizontal stripe.
+/// A vertical or horizontal stripe.
 pub type Stripe<VF> = (Interval<VF>, VF);
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
@@ -91,6 +91,7 @@ impl<VF: Value> Stripes<VF> {
 
         let mut arranged_stripes = Vec::new();
         let mut active_values = ActiveValues::new();
+
         let mut idx = 0;
         let n = delimiters.len();
         while idx < delimiters.len() {
