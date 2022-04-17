@@ -54,7 +54,10 @@ fn is_dominated_at_time_by<G: CriticalGrade>(
     critical_value: &G,
     neigh_vertex: usize,
 ) -> bool {
-    let other_neighs = adjacency_matrix.closed_neighbours_at_value(neigh_vertex, critical_value);
+    let other_neighs =
+        adjacency_matrix.closed_neighbours(neigh_vertex, critical_value.clone())
+            .filter_map(move |(v, v_value)| v_value.lte(critical_value).then(|| v))
+            .assume_sorted_by_item();
     let applicable_neighs = adjacency_matrix
         .common_neighbours(edge)
         .filter_map(|(v, value)| (value.lte(critical_value)).then(|| v))

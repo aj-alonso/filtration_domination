@@ -59,16 +59,6 @@ impl<G: CriticalGrade> AdjacencyMatrix<G> {
             .union(std::iter::once((u, u_value)))
     }
 
-    pub fn closed_neighbours_at_value<'a>(
-        &'a self,
-        u: usize,
-        max_critical_value: &'a G,
-    ) -> impl SortedIterator<Item = usize> + 'a {
-        self.closed_neighbours(u, max_critical_value.clone())
-            .filter_map(move |(v, v_value)| v_value.lte(max_critical_value).then(|| v))
-            .assume_sorted_by_item()
-    }
-
     fn common_neighbours_raw<'a>(
         &'a self,
         edge: &'a FilteredEdge<G>,
