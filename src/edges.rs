@@ -49,22 +49,6 @@ impl Edge for BareEdge {
     }
 }
 
-impl BareEdge {
-    pub fn incident_to(&self, other: &BareEdge) -> bool {
-        self.0 == other.0 || self.0 == other.1 || self.1 == other.1 || self.1 == other.0
-    }
-
-    pub fn vertices_if_incident(&self, other: &BareEdge) -> Option<[usize; 3]> {
-        if self.0 == other.0 || self.1 == other.0 {
-            Some([self.0, self.1, other.1])
-        } else if self.0 == other.1 || self.1 == other.1 {
-            Some([self.0, self.1, other.0])
-        } else {
-            None
-        }
-    }
-}
-
 impl PartialEq for BareEdge {
     fn eq(&self, other: &Self) -> bool {
         self.minmax() == other.minmax()
@@ -96,6 +80,72 @@ impl Hash for BareEdge {
 impl std::fmt::Display for BareEdge {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{}, {}]", self.0, self.1)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FilteredEdge<G> {
+    pub grade: G,
+    pub edge: BareEdge,
+}
+
+impl<G> Edge for FilteredEdge<G> {
+    fn u(&self) -> usize {
+        self.edge.u()
+    }
+
+    fn u_mut(&mut self) -> &mut usize {
+        self.edge.u_mut()
+    }
+
+    fn v(&self) -> usize {
+        self.edge.v()
+    }
+
+    fn v_mut(&mut self) -> &mut usize {
+        self.edge.v_mut()
+    }
+}
+
+/// Implements a total ordering, same as .cmp().
+impl<G: Ord> PartialOrd<Self> for FilteredEdge<G> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+/// Implements a lexicographic ordering.
+/// First lexicographically compare the grades, and resolve ties by comparing edges.
+impl<G: Ord> Ord for FilteredEdge<G> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.grade.cmp(&other.grade) {
+            Ordering::Equal => self.edge.cmp(&other.edge),
+            not_eq => not_eq,
+        }
+    }
+}
+
+impl<G: Ord> FilteredEdge<G> {
+    /// First compare grades, by the given function `grade_cmp`,
+    /// and, if they are equal, compare edge values.
+    fn cmp_by(&self, other: &Self, grade_cmp: impl Fn(&G, &G) -> Ordering) -> Ordering {
+        match grade_cmp(&self.grade, &other.grade) {
+            Ordering::Equal => self.edge.cmp(&other.edge),
+            not_eq => not_eq,
+        }
+    }
+}
+
+impl<G: std::fmt::Display> std::fmt::Display for FilteredEdge<G> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}", self.edge, self.grade)?;
+        Ok(())
+    }
+}
+
+impl<G> From<FilteredEdge<G>> for BareEdge {
+    fn from(e: FilteredEdge<G>) -> Self {
+        e.edge
     }
 }
 
@@ -211,71 +261,5 @@ impl<E: Edge> From<Vec<E>> for EdgeList<E> {
     fn from(edges: Vec<E>) -> Self {
         let n_vertices = Self::count_vertices(&edges);
         Self { n_vertices, edges }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct FilteredEdge<G> {
-    pub grade: G,
-    pub edge: BareEdge,
-}
-
-impl<G> Edge for FilteredEdge<G> {
-    fn u(&self) -> usize {
-        self.edge.u()
-    }
-
-    fn u_mut(&mut self) -> &mut usize {
-        self.edge.u_mut()
-    }
-
-    fn v(&self) -> usize {
-        self.edge.v()
-    }
-
-    fn v_mut(&mut self) -> &mut usize {
-        self.edge.v_mut()
-    }
-}
-
-/// Implements a total ordering, same as .cmp().
-impl<G: Ord> PartialOrd<Self> for FilteredEdge<G> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-/// Implements a lexicographic ordering.
-/// First lexicographically compare the grades, and resolve ties by comparing edges.
-impl<G: Ord> Ord for FilteredEdge<G> {
-    fn cmp(&self, other: &Self) -> Ordering {
-        match self.grade.cmp(&other.grade) {
-            Ordering::Equal => self.edge.cmp(&other.edge),
-            not_eq => not_eq,
-        }
-    }
-}
-
-impl<G: Ord> FilteredEdge<G> {
-    /// First compare grades, by the given function `grade_cmp`,
-    /// and, if they are equal, compare edge values.
-    fn cmp_by(&self, other: &Self, grade_cmp: impl Fn(&G, &G) -> Ordering) -> Ordering {
-        match grade_cmp(&self.grade, &other.grade) {
-            Ordering::Equal => self.edge.cmp(&other.edge),
-            not_eq => not_eq,
-        }
-    }
-}
-
-impl<G: std::fmt::Display> std::fmt::Display for FilteredEdge<G> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.edge, self.grade)?;
-        Ok(())
-    }
-}
-
-impl<G> From<FilteredEdge<G>> for BareEdge {
-    fn from(e: FilteredEdge<G>) -> Self {
-        e.edge
     }
 }

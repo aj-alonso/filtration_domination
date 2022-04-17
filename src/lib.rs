@@ -1,3 +1,4 @@
+//! Algorithms to check for filtration-domination.
 use num::{Bounded, Zero};
 use std::cmp::Ordering;
 use std::fmt::Formatter;
@@ -9,6 +10,7 @@ pub mod edges;
 
 pub mod removal;
 
+/// A generic value, like usize or i32, that we can use as grades in a bifiltered graph.
 pub trait Value:
     Zero
     + Ord
@@ -37,6 +39,7 @@ impl<T> Value for T where
 {
 }
 
+/// The grade in which a simplex enters a filtration.
 pub trait CriticalGrade:
     Clone + PartialOrd + Ord + std::fmt::Debug + std::marker::Sync + std::marker::Send
 {

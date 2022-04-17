@@ -7,7 +7,7 @@ pub fn count_isolated_edges<VF: Value>(
     edge_list: &EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
 ) -> (usize, usize) {
     let mut isolated_edges = 0;
-    let mut non_dominated_when_appear = 0;
+    let mut dominated_when_appear = 0;
 
     let mut adjacency_matrix = AdjacencyMatrix::new(edge_list.n_vertices);
 
@@ -24,9 +24,9 @@ pub fn count_isolated_edges<VF: Value>(
             isolated_edges += 1;
         }
         if naive::is_dominated_at_time(&adjacency_matrix, edge, &edge.grade) {
-            non_dominated_when_appear += 1;
+            dominated_when_appear += 1;
         }
     }
 
-    (isolated_edges, non_dominated_when_appear)
+    (isolated_edges, dominated_when_appear)
 }
