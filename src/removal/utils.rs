@@ -1,6 +1,7 @@
+use sorted_iter::assume::AssumeSortedByItemExt;
+use sorted_iter::SortedIterator;
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
-use crate::removal::naive;
 use crate::{CriticalGrade, OneCriticalGrade, Value};
 
 pub fn count_isolated_edges<VF: Value>(
@@ -23,10 +24,41 @@ pub fn count_isolated_edges<VF: Value>(
             // Edge has empty neighborhood.
             isolated_edges += 1;
         }
-        if naive::is_dominated_at_time(&adjacency_matrix, edge, &edge.grade) {
+        if is_dominated_at_time(&adjacency_matrix, edge, &edge.grade) {
             dominated_when_appear += 1;
         }
     }
 
     (isolated_edges, dominated_when_appear)
+}
+
+fn is_dominated_at_time<G: CriticalGrade>(
+    adjacency_matrix: &AdjacencyMatrix<G>,
+    edge: &FilteredEdge<G>,
+    critical_value: &G,
+) -> bool {
+    for neigh_vertex in adjacency_matrix
+        .common_neighbours(edge)
+        .filter_map(|(v, value)| (value.lte(critical_value)).then(|| v))
+    {
+        if is_dominated_at_time_by(adjacency_matrix, edge, critical_value, neigh_vertex) {
+            return true;
+        }
+    }
+    false
+}
+
+fn is_dominated_at_time_by<G: CriticalGrade>(
+    adjacency_matrix: &AdjacencyMatrix<G>,
+    edge: &FilteredEdge<G>,
+    critical_value: &G,
+    neigh_vertex: usize,
+) -> bool {
+    let other_neighs = adjacency_matrix.closed_neighbours_at_value(neigh_vertex, critical_value);
+    let applicable_neighs = adjacency_matrix
+        .common_neighbours(edge)
+        .filter_map(|(v, value)| (value.lte(critical_value)).then(|| v))
+        .assume_sorted_by_item();
+
+    applicable_neighs.is_subset(other_neighs)
 }

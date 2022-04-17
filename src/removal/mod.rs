@@ -1,7 +1,5 @@
 pub mod parallel;
 
-// TODO: remove this public API.
-pub mod naive;
 pub mod utils;
 
 pub use full::{remove_filtration_dominated, remove_filtration_dominated_timed};
