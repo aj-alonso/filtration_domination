@@ -1,5 +1,3 @@
-pub mod parallel;
-
 pub mod utils;
 
 pub use full::{remove_filtration_dominated, remove_filtration_dominated_timed};

@@ -1,4 +1,3 @@
-pub mod par;
 mod regions;
 mod stripes;
 

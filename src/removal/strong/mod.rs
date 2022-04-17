@@ -1,5 +1,3 @@
-pub mod par;
-
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::EdgeOrder;
