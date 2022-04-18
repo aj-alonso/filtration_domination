@@ -24,7 +24,7 @@ pub fn remove_strongly_filtration_dominated_timed<G: CriticalGrade>(
 ) -> EdgeList<FilteredEdge<G>> {
     match order {
         EdgeOrder::ReverseLexicographic => {
-            edge_list.edges_mut().sort_by(|a, b| b.cmp(a));
+            edge_list.edges_mut().sort_unstable_by(|a, b| b.cmp(a));
         }
         EdgeOrder::Maintain => {}
     }

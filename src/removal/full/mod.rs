@@ -30,7 +30,7 @@ pub fn remove_filtration_dominated_timed<VF: Value>(
 ) -> EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>> {
     match order {
         EdgeOrder::ReverseLexicographic => {
-            edge_list.edges_mut().sort_by(|a, b| b.cmp(a));
+            edge_list.edges_mut().sort_unstable_by(|a, b| b.cmp(a));
         }
         EdgeOrder::Maintain => {}
     }
