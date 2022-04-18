@@ -265,3 +265,61 @@ impl<E: Edge> From<Vec<E>> for EdgeList<E> {
         Self { n_vertices, edges }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::edges::{BareEdge, EdgeList, FilteredEdge};
+    use crate::OneCriticalGrade;
+
+    #[test]
+    fn edge_list_lexicographic_order() {
+        let mut edges: EdgeList<_> = sorting_test_dataset();
+        edges.sort_lexicographically();
+        let grades: Vec<OneCriticalGrade<usize, 2>> = edges.edge_iter().map(|e| e.grade).collect();
+        let expected_grades: Vec<OneCriticalGrade<usize, 2>> =
+            vec![[1, 1].into(), [1, 2].into(), [2, 1].into(), [2, 2].into()];
+        assert_eq!(grades, expected_grades);
+    }
+
+    #[test]
+    fn edge_list_colexicographic_order() {
+        let mut edges: EdgeList<_> = sorting_test_dataset();
+        edges.sort_colexicographically();
+        let grades: Vec<OneCriticalGrade<usize, 2>> = edges.edge_iter().map(|e| e.grade).collect();
+        let expected_grades: Vec<OneCriticalGrade<usize, 2>> =
+            vec![[1, 1].into(), [2, 1].into(), [1, 2].into(), [2, 2].into()];
+        assert_eq!(grades, expected_grades);
+    }
+
+    #[test]
+    fn edge_list_reverse_colexicographic_order() {
+        let mut edges: EdgeList<_> = sorting_test_dataset();
+        edges.sort_reverse_colexicographically();
+        let grades: Vec<OneCriticalGrade<usize, 2>> = edges.edge_iter().map(|e| e.grade).collect();
+        let expected_grades: Vec<OneCriticalGrade<usize, 2>> =
+            vec![[2, 2].into(), [1, 2].into(), [2, 1].into(), [1, 1].into()];
+        assert_eq!(grades, expected_grades);
+    }
+
+    fn sorting_test_dataset() -> EdgeList<FilteredEdge<OneCriticalGrade<usize, 2>>> {
+        vec![
+            FilteredEdge {
+                grade: [1, 1].into(),
+                edge: BareEdge(0, 1),
+            },
+            FilteredEdge {
+                grade: [2, 2].into(),
+                edge: BareEdge(5, 3),
+            },
+            FilteredEdge {
+                grade: [2, 1].into(),
+                edge: BareEdge(0, 3),
+            },
+            FilteredEdge {
+                grade: [1, 2].into(),
+                edge: BareEdge(2, 1),
+            },
+        ]
+        .into()
+    }
+}

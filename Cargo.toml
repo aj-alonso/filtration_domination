@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-num = "0.4.0"
-sorted-iter = "0.1.8"
-rand = "0.8.5"
-litemap = "0.3.0"
-rustc-hash = "1.1.0"
+num = "0.4.0" # Generic numbers.
+sorted-iter = "0.1.8" # For sorted iterators and related utils.
+rand = "0.8.5" # Random number generation.
+litemap = "0.3.0" # Ordered data structure backed by a vector.
+rustc-hash = "1.1.0" # Faster hashmaps (but not ddos-resistant).
+thiserror = "1.0" # Error ergonomics.
+ordered-float = {version = "2.8.0", features = ["rand"]} # Add a total order to floats.

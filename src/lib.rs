@@ -1,6 +1,11 @@
 //! Algorithms and utilities to work with bifiltered graphs. In particular,
 //! algorithms to remove edges from a bifiltered graph while maintaining the topological
 //! properties of its clique complex, see [crate::removal].
+
+#![warn(clippy::shadow_unrelated)]
+#![warn(clippy::needless_pass_by_value)]
+#![allow(clippy::needless_range_loop)]
+
 use num::{Bounded, Zero};
 use std::cmp::Ordering;
 use std::fmt::Formatter;
@@ -10,7 +15,11 @@ use std::slice::Iter;
 
 pub mod edges;
 
+pub mod distance_matrix;
+pub mod points;
 pub mod removal;
+
+mod io_utils;
 
 /// A generic value, like usize or i32, that we can use as grades in a bifiltered graph.
 pub trait Value:
