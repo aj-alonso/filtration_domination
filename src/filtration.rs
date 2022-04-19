@@ -1,7 +1,101 @@
+use crate::edges::{BareEdge, FilteredEdge};
 use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
 use crate::CriticalGrade;
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
+use std::collections::BTreeSet;
+
+/// Build a flag multi-filtration from an iterator of multi-filtered edges.
+/// The iterator does not need to be sorted.
+/// The resulting multi-filtration is 1-critical.
+pub fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>>>(
+    vertices: usize,
+    max_dim: usize,
+    edges: I,
+) -> Filtration<G, S>
+where
+    S: for<'a> SimplicialComplex<'a>,
+{
+    let mut f: Filtration<G, S> = Filtration::new_empty(vertices, max_dim);
+    let mut vertex_simplex = [0];
+
+    // Add vertices.
+    for v in 0..vertices {
+        vertex_simplex[0] = v;
+        f.add(G::zero(), &vertex_simplex);
+    }
+
+    let mut neighbours: Vec<BTreeSet<usize>> = vec![BTreeSet::new(); vertices];
+
+    let mut simplex_buffer = BTreeSet::new();
+    for filtered_edge in edges {
+        let BareEdge(u, v) = filtered_edge.edge;
+        simplex_buffer.insert(u);
+        simplex_buffer.insert(v);
+        f.add_iter(filtered_edge.grade, 1, simplex_buffer.iter().copied());
+
+        let common_neighbours: BTreeSet<usize> = neighbours[u]
+            .intersection(&neighbours[v])
+            .copied()
+            .collect();
+        add_flag_simplex(
+            &mut f,
+            &neighbours,
+            max_dim,
+            &common_neighbours,
+            &mut simplex_buffer,
+        );
+
+        neighbours[u].insert(v);
+        neighbours[v].insert(u);
+        simplex_buffer.clear();
+    }
+
+    f
+}
+
+fn add_flag_simplex<G: CriticalGrade, S>(
+    f: &mut Filtration<G, S>,
+    neighbours: &[BTreeSet<usize>],
+    max_dim: usize,
+    common_neighbours: &BTreeSet<usize>,
+    simplex: &mut BTreeSet<usize>,
+) where
+    S: for<'a> SimplicialComplex<'a>,
+{
+    // In this call we add simplices of dimension (simplex.len() - 1) + 1.
+    let dim = simplex.len();
+    if dim > max_dim {
+        return;
+    }
+
+    for v in common_neighbours.iter() {
+        simplex.insert(*v);
+
+        let mut vf = G::min_value();
+        for boundary_idx in f
+            .simplicial_complex()
+            .simplex_boundary(dim, simplex.iter().copied())
+        {
+            let boundary_vf = f.value_of(dim - 1, boundary_idx);
+            vf = vf.join(boundary_vf);
+        }
+
+        f.add_iter(vf, dim, simplex.iter().copied());
+
+        if dim < max_dim {
+            // Recurse.
+            let new_common_neighbours: BTreeSet<usize> = common_neighbours
+                .intersection(&neighbours[*v])
+                .copied()
+                .filter(|x| x < v)
+                .collect();
+            add_flag_simplex(f, neighbours, max_dim, &new_common_neighbours, simplex);
+        }
+
+        simplex.remove(v);
+    }
+}
 
 #[derive(Debug)]
 pub struct Filtration<G, S> {

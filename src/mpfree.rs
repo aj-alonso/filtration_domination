@@ -1,11 +1,30 @@
 use crate::chain_complex::ToFreeImplicitRepresentation;
-use crate::Value;
+use crate::edges::{EdgeList, FilteredEdge};
+use crate::filtration::{build_flag_filtration, Filtration};
+use crate::simplicial_complex::MapSimplicialComplex;
+use crate::{CriticalGrade, Value};
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader, BufWriter};
 use std::path::Path;
 use std::process::{Command, ExitStatus, Stdio};
+use std::time::Duration;
 use thiserror::Error;
+
+const TMP_DIRECTORY: &str = "tmp";
+
+#[derive(Debug, Clone)]
+pub struct MinimalPresentationResult {
+    pub timers: MinimalPresentationComputationTime,
+    pub output: ParsedMpfreeOutput,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct MinimalPresentationComputationTime {
+    build_filtration: Duration,
+    write_bifiltration: Duration,
+    mpfree: Duration,
+}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ParsedMpfreeOutput {
@@ -13,13 +32,42 @@ pub struct ParsedMpfreeOutput {
     pub sizes: [usize; 3],
 }
 
-impl ParsedMpfreeOutput {
-    pub fn betti(&self) -> [usize; 3] {
-        [self.sizes[1], self.sizes[0], self.sizes[0] - self.sizes[1]]
-    }
+pub fn compute_minimal_presentation<VF: Value, G: CriticalGrade>(
+    name: &str,
+    homology: usize,
+    edge_list: &EdgeList<FilteredEdge<G>>,
+) -> Result<MinimalPresentationResult, MpfreeError>
+where
+    Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
+{
+    let mut timers = MinimalPresentationComputationTime::default();
+
+    // Build filtration.
+    let start_filtration = std::time::Instant::now();
+    let filtration: Filtration<_, MapSimplicialComplex> = build_flag_filtration(
+        edge_list.n_vertices,
+        homology + 1,
+        edge_list.edge_iter().cloned(),
+    );
+    timers.build_filtration = start_filtration.elapsed();
+
+    // Save filtration to disk.
+    let start_io = std::time::Instant::now();
+    let directory = Path::new(TMP_DIRECTORY);
+    let filepath_mpfree_input = directory.join(format!("{}_scc2020", name));
+    let filepath_out = filepath_mpfree_input.with_extension("out");
+    write_bifiltration(&filepath_mpfree_input, homology, &filtration).unwrap();
+    timers.write_bifiltration = start_io.elapsed();
+
+    // Compute minimal presentation.
+    let start_mpfree = std::time::Instant::now();
+    let output = run_mpfree(filepath_mpfree_input, filepath_out)?;
+    timers.mpfree = start_mpfree.elapsed();
+
+    Ok(MinimalPresentationResult { timers, output })
 }
 
-pub fn write_bifiltration<
+fn write_bifiltration<
     VF: Value,
     F: ToFreeImplicitRepresentation<VF, N>,
     P: AsRef<Path>,
@@ -53,7 +101,7 @@ pub enum MpfreeError {
     WrongNumberFormat(#[from] std::num::ParseIntError),
 }
 
-pub fn run_mpfree<P: AsRef<Path>>(
+fn run_mpfree<P: AsRef<Path>>(
     filepath_in: P,
     filepath_out: P,
 ) -> Result<ParsedMpfreeOutput, MpfreeError> {
