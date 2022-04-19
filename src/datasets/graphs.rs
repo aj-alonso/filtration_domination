@@ -93,6 +93,5 @@ pub fn default_estimator<F: Value + std::fmt::Display>(
     matrix: &DistanceMatrix<F>,
 ) -> DensityEstimator<F> {
     let bandwidth = matrix.percentile(0.2);
-    eprintln!("Bandwidth: {bandwidth}");
     DensityEstimator::Gaussian(*bandwidth)
 }

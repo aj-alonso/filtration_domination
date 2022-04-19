@@ -1,6 +1,7 @@
+use crate::chain_complex::{ChainComplex, Column, GradedMatrix, ToFreeImplicitRepresentation};
 use crate::edges::{BareEdge, FilteredEdge};
 use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
-use crate::CriticalGrade;
+use crate::{CriticalGrade, OneCriticalGrade, Value};
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::BTreeSet;
@@ -158,5 +159,42 @@ where
 
     pub fn simplicial_complex(&self) -> &S {
         &self.complex
+    }
+}
+
+impl<VF: Value, S, const N: usize> ToFreeImplicitRepresentation<VF, N>
+    for Filtration<OneCriticalGrade<VF, N>, S>
+where
+    S: for<'a> SimplicialComplex<'a>,
+{
+    fn to_free_implicit_representation(&self, homology: usize) -> ChainComplex<VF, N> {
+        fn get_graded_matrix<VF: Value, S, const N: usize>(
+            f: &Filtration<OneCriticalGrade<VF, N>, S>,
+            dimension: usize,
+        ) -> GradedMatrix<VF, N>
+        where
+            S: for<'a> SimplicialComplex<'a>,
+        {
+            let mut matrix: GradedMatrix<VF, N> = GradedMatrix::new_empty(0);
+            let values_per_dim = f.grades[dimension].iter().cloned();
+            for (simplex_idx, grade) in values_per_dim.enumerate() {
+                let boundary_column: Vec<usize> = f
+                    .simplicial_complex()
+                    .boundary_iterator(dimension, simplex_idx)
+                    .collect();
+                matrix.add_column(grade, Column::new(boundary_column));
+            }
+            matrix
+        }
+
+        let low_matrix = if homology > 0 {
+            get_graded_matrix(self, homology - 1)
+        } else {
+            GradedMatrix::new_empty(0)
+        };
+        let mid_matrix = get_graded_matrix(self, homology);
+        let high_matrix = get_graded_matrix(self, homology + 1);
+
+        ChainComplex::new(vec![high_matrix, mid_matrix, low_matrix])
     }
 }

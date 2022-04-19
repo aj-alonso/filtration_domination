@@ -5,6 +5,7 @@ mod graphs;
 mod points;
 
 pub use graphs::get_dataset_density_edge_list;
+pub use graphs::Threshold;
 
 const DATASET_DIRECTORY: &str = "datasets";
 

@@ -4,11 +4,11 @@ use crate::filtration::{build_flag_filtration, Filtration};
 use crate::simplicial_complex::MapSimplicialComplex;
 use crate::{CriticalGrade, Value};
 use std::fs::File;
-use std::io;
 use std::io::{BufRead, BufReader, BufWriter};
 use std::path::Path;
 use std::process::{Command, ExitStatus, Stdio};
 use std::time::Duration;
+use std::{fs, io};
 use thiserror::Error;
 
 const TMP_DIRECTORY: &str = "tmp";
@@ -54,6 +54,7 @@ where
     // Save filtration to disk.
     let start_io = std::time::Instant::now();
     let directory = Path::new(TMP_DIRECTORY);
+    fs::create_dir_all(&directory)?;
     let filepath_mpfree_input = directory.join(format!("{}_scc2020", name));
     let filepath_out = filepath_mpfree_input.with_extension("out");
     write_bifiltration(&filepath_mpfree_input, homology, &filtration).unwrap();

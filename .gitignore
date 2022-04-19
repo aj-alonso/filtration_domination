@@ -1,4 +1,11 @@
 /target
 /Cargo.lock
 /.idea
+
 code.zip
+/datasets/senate104_edge_list.txt_0.68902_distmat.txt
+/datasets/celegans_weighted_undirected_reindexed_for_matlab_maxdist_2.6429_SP_distmat.txt
+/datasets/network379_edge_list.txt_38.3873_distmat.txt
+/datasets/HIV1_2011.all.nt.concat.fa_hdm.txt
+/datasets/dragon_vrip.ply.txt_2000_.txt_distmat.txt
+/tmp
