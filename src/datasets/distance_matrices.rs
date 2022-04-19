@@ -5,7 +5,7 @@ use crate::datasets::{Dataset, DATASET_DIRECTORY};
 use crate::distance_matrix::input::read_lower_triangular_distance_matrix;
 use crate::distance_matrix::output::write_lower_triangular_distance_matrix;
 use crate::distance_matrix::DistanceMatrix;
-use crate::points::{Point, PointCloud};
+use crate::points::PointCloud;
 use ordered_float::OrderedFloat;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
@@ -21,54 +21,12 @@ fn read_distance_matrix_from_file<P: AsRef<Path>>(
     Ok(distance_matrix)
 }
 
-fn sample_swiss_roll_distance_matrix(n_points: usize) -> DistanceMatrix<OrderedFloat<f64>> {
-    let points: PointCloud<f64, 3> = sample_swiss_roll(n_points);
-    let ps = points.0;
-    let ps: Vec<Point<OrderedFloat<f64>, 3>> = ps
-        .into_iter()
-        .map(|Point([a, b, c])| Point([OrderedFloat(a), OrderedFloat(b), OrderedFloat(c)]))
-        .collect();
-    let point_cloud = PointCloud(ps);
-    point_cloud.distance_matrix()
-}
-
-fn sample_torus_distance_matrix(n_points: usize) -> DistanceMatrix<OrderedFloat<f64>> {
-    let points: PointCloud<f64, 3> = sample_torus(n_points);
-    let ps = points.0;
-    let ps: Vec<Point<OrderedFloat<f64>, 3>> = ps
-        .into_iter()
-        .map(|Point([a, b, c])| Point([OrderedFloat(a), OrderedFloat(b), OrderedFloat(c)]))
-        .collect();
-    let point_cloud = PointCloud(ps);
-    point_cloud.distance_matrix()
-}
-
-fn sample_sphere_distance_matrix(n_points: usize) -> DistanceMatrix<OrderedFloat<f64>> {
-    let points: PointCloud<f64, 3> = sample_noisy_sphere(n_points, 0.9, 0.75, 0.3);
-    let ps = points.0;
-    let ps: Vec<Point<OrderedFloat<f64>, 3>> = ps
-        .into_iter()
-        .map(|Point([a, b, c])| Point([OrderedFloat(a), OrderedFloat(b), OrderedFloat(c)]))
-        .collect();
-    let point_cloud = PointCloud(ps);
-    point_cloud.distance_matrix()
-}
-
-fn sample_circle_distance_matrix(n_points: usize) -> DistanceMatrix<OrderedFloat<f64>> {
-    let points: PointCloud<f64, 2> = sample_noisy_sphere(n_points, 1., 0., 0.);
-    let ps = points.0;
-    let ps: Vec<Point<OrderedFloat<f64>, 2>> = ps
-        .into_iter()
-        .map(|Point([a, b])| Point([OrderedFloat(a), OrderedFloat(b)]))
-        .collect();
-    let point_cloud = PointCloud(ps);
-    point_cloud.distance_matrix()
-}
-
-fn sample_uniform_distance_matrix(n_points: usize) -> DistanceMatrix<OrderedFloat<f64>> {
-    let point_cloud = sample_random_points::<OrderedFloat<f64>, 2>(n_points);
-
-    point_cloud.distance_matrix()
+fn sample_distance_matrix<F: Fn(usize) -> PointCloud<f64, N>, const N: usize>(
+    n_points: usize,
+    f: F,
+) -> DistanceMatrix<OrderedFloat<f64>> {
+    let points: PointCloud<OrderedFloat<f64>, N> = f(n_points).into();
+    points.distance_matrix()
 }
 
 fn read_or_save_distance_matrix<
@@ -113,11 +71,18 @@ pub fn get_dataset_distance_matrix(
         Dataset::Hiv => read_distance_matrix_from_file(
             dataset_directory.join("HIV1_2011.all.nt.concat.fa_hdm.txt"),
         ),
+        Dataset::Dragon => read_distance_matrix_from_file(
+            dataset_directory.join("dragon_vrip.ply.txt_2000_.txt_distmat.txt"),
+        ),
         Dataset::Sphere { n_points } => {
             let dst_filename = dataset_directory.join(format!("sphere_{n_points}_distmat.txt"));
             read_or_save_distance_matrix(
                 dst_filename,
-                || sample_sphere_distance_matrix(n_points),
+                || {
+                    sample_distance_matrix(n_points, |n| {
+                        sample_noisy_sphere::<f64, 3>(n, 0.9, 0.75, 0.3)
+                    })
+                },
                 use_cache,
             )
         }
@@ -125,7 +90,7 @@ pub fn get_dataset_distance_matrix(
             let dst_filename = dataset_directory.join(format!("torus_{n_points}_distmat.txt"));
             read_or_save_distance_matrix(
                 dst_filename,
-                || sample_torus_distance_matrix(n_points),
+                || sample_distance_matrix(n_points, sample_torus),
                 use_cache,
             )
         }
@@ -133,7 +98,7 @@ pub fn get_dataset_distance_matrix(
             let dst_filename = dataset_directory.join(format!("swiss_roll_{n_points}_distmat.txt"));
             read_or_save_distance_matrix(
                 dst_filename,
-                || sample_swiss_roll_distance_matrix(n_points),
+                || sample_distance_matrix(n_points, sample_swiss_roll),
                 use_cache,
             )
         }
@@ -141,7 +106,11 @@ pub fn get_dataset_distance_matrix(
             let dst_filename = dataset_directory.join(format!("circle_{n_points}_distmat.txt"));
             read_or_save_distance_matrix(
                 dst_filename,
-                || sample_circle_distance_matrix(n_points),
+                || {
+                    sample_distance_matrix(n_points, |n| {
+                        sample_noisy_sphere::<f64, 2>(n, 1., 0., 0.)
+                    })
+                },
                 use_cache,
             )
         }
@@ -149,12 +118,9 @@ pub fn get_dataset_distance_matrix(
             let dst_filename = dataset_directory.join(format!("uniform_{n_points}_distmat.txt"));
             read_or_save_distance_matrix(
                 dst_filename,
-                || sample_uniform_distance_matrix(n_points),
+                || sample_distance_matrix(n_points, sample_random_points::<f64, 2>),
                 use_cache,
             )
         }
-        Dataset::Dragon => read_distance_matrix_from_file(
-            dataset_directory.join("dragon_vrip.ply.txt_2000_.txt_distmat.txt"),
-        ),
     }
 }
