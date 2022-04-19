@@ -19,8 +19,10 @@ pub mod distance_matrix;
 pub mod points;
 pub mod removal;
 
+mod chain_complex;
 mod filtration;
 mod io_utils;
+mod mpfree;
 mod simplicial_complex;
 
 /// A generic value, like usize or i32, that we can use as grades in a bifiltered graph.
