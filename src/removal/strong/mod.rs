@@ -1,7 +1,7 @@
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::EdgeOrder;
-use crate::{CriticalGrade, Vertex};
+use crate::CriticalGrade;
 use std::cmp::Ordering;
 use std::time::Duration;
 
@@ -71,8 +71,8 @@ fn is_strongly_filtration_dominated<G: CriticalGrade>(
 
 fn is_subset<G: CriticalGrade, I, J>(left: I, mut right: J) -> bool
 where
-    I: Iterator<Item = (Vertex, G)>,
-    J: Iterator<Item = (Vertex, G)>,
+    I: Iterator<Item = (usize, G)>,
+    J: Iterator<Item = (usize, G)>,
 {
     'next_a: for (a, value_a) in left {
         for (b, value_b) in right.by_ref() {

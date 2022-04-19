@@ -1,7 +1,7 @@
 use crate::chain_complex::{ChainComplex, Column, GradedMatrix, ToFreeImplicitRepresentation};
 use crate::edges::{BareEdge, FilteredEdge};
-use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex};
-use crate::{CriticalGrade, OneCriticalGrade, Value, Vertex};
+use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
+use crate::{CriticalGrade, OneCriticalGrade, Value};
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::BTreeSet;
@@ -10,7 +10,7 @@ use std::collections::BTreeSet;
 /// The iterator does not need to be sorted.
 /// The resulting multi-filtration is 1-critical.
 pub fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>>>(
-    vertices: Vertex,
+    vertices: usize,
     max_dim: usize,
     edges: I,
 ) -> Filtration<G, S>
@@ -26,7 +26,7 @@ where
         f.add(G::zero(), &vertex_simplex);
     }
 
-    let mut neighbours: Vec<BTreeSet<Vertex>> = vec![BTreeSet::new(); vertices as usize];
+    let mut neighbours: Vec<BTreeSet<usize>> = vec![BTreeSet::new(); vertices];
 
     let mut simplex_buffer = BTreeSet::new();
     for filtered_edge in edges {
@@ -35,8 +35,8 @@ where
         simplex_buffer.insert(v);
         f.add_iter(filtered_edge.grade, 1, simplex_buffer.iter().copied());
 
-        let common_neighbours: BTreeSet<Vertex> = neighbours[u as usize]
-            .intersection(&neighbours[v as usize])
+        let common_neighbours: BTreeSet<usize> = neighbours[u]
+            .intersection(&neighbours[v])
             .copied()
             .collect();
         add_flag_simplex(
@@ -47,8 +47,8 @@ where
             &mut simplex_buffer,
         );
 
-        neighbours[u as usize].insert(v);
-        neighbours[v as usize].insert(u);
+        neighbours[u].insert(v);
+        neighbours[v].insert(u);
         simplex_buffer.clear();
     }
 
@@ -57,10 +57,10 @@ where
 
 fn add_flag_simplex<G: CriticalGrade, S>(
     f: &mut Filtration<G, S>,
-    neighbours: &[BTreeSet<Vertex>],
+    neighbours: &[BTreeSet<usize>],
     max_dim: usize,
-    common_neighbours: &BTreeSet<Vertex>,
-    simplex: &mut BTreeSet<Vertex>,
+    common_neighbours: &BTreeSet<usize>,
+    simplex: &mut BTreeSet<usize>,
 ) where
     S: for<'a> SimplicialComplex<'a>,
 {
@@ -86,8 +86,8 @@ fn add_flag_simplex<G: CriticalGrade, S>(
 
         if dim < max_dim {
             // Recurse.
-            let new_common_neighbours: BTreeSet<Vertex> = common_neighbours
-                .intersection(&neighbours[*v as usize])
+            let new_common_neighbours: BTreeSet<usize> = common_neighbours
+                .intersection(&neighbours[*v])
                 .copied()
                 .filter(|x| x < v)
                 .collect();
@@ -132,7 +132,7 @@ where
         self.add_iter(g, dim, s.iter().copied().assume_sorted_by_item())
     }
 
-    pub fn add_iter<I: SortedIterator<Item = Vertex>>(
+    pub fn add_iter<I: SortedIterator<Item = usize>>(
         &mut self,
         g: G,
         dim: Dimension,

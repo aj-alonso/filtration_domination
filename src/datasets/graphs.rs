@@ -78,7 +78,7 @@ pub fn get_dataset_density_edge_list(
         } = edge;
 
         // The edge density is the max of the codensity of its vertices.
-        let edge_density = max(estimations[*u as usize], estimations[*v as usize]);
+        let edge_density = max(estimations[*u], estimations[*v]);
 
         FilteredEdge {
             grade: OneCriticalGrade([edge_density, *dist]),

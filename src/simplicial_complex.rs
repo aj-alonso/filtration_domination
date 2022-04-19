@@ -1,9 +1,9 @@
-use crate::Vertex;
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
+pub type Vertex = usize;
 pub type Dimension = usize;
 
 pub trait SimplicialComplex<'a> {
@@ -28,7 +28,7 @@ pub trait SimplicialComplex<'a> {
     /// The iterator must produce exactly dim + 1 items.
     /// The boundaries of the simplex must have been added before.
     /// TODO: change this to accept an iterator of usize, rather than &usize.
-    fn add_iter<I: SortedIterator<Item = Vertex>>(
+    fn add_iter<I: SortedIterator<Item = usize>>(
         &mut self,
         dim: Dimension,
         iter: I,
@@ -43,7 +43,7 @@ pub trait SimplicialComplex<'a> {
     /// Returns an iterator over the boundary of the given simplex.
     /// Unlike `boundary_iterator`, the simplex may not be in the simplicial complex,
     /// but it faces must be.
-    fn simplex_boundary<I: SortedIterator<Item = Vertex>>(
+    fn simplex_boundary<I: SortedIterator<Item = usize>>(
         &'a self,
         dim: Dimension,
         simplex_iter: I,
@@ -82,12 +82,12 @@ impl MapSimplicialComplex {
 
     /// Get the simplex key from a stream of vertices.
     /// TODO: maybe check that the number of vertices used match a given dimension?
-    fn simplex_to_key<I: SortedIterator<Item = Vertex>>(&self, iter: I) -> SimplexKey {
+    fn simplex_to_key<I: SortedIterator<Item = usize>>(&self, iter: I) -> SimplexKey {
         let mut k: SimplexKey = 0;
         let mut exp: SimplexKey = 1;
         for v in iter {
-            k += (v as usize) * exp;
-            exp *= self.max_n as usize;
+            k += v * exp;
+            exp *= self.max_n;
         }
         k
     }
@@ -98,7 +98,7 @@ impl MapSimplicialComplex {
         key: SimplexKey,
     ) -> Option<(Dimension, usize)> {
         if dim > 0 {
-            let it = SimplexKeyBoundaryIterator::new(self.max_n as usize, dim, key);
+            let it = SimplexKeyBoundaryIterator::new(self.max_n, dim, key);
 
             for facet_key in it {
                 assert!(
@@ -116,7 +116,7 @@ impl MapSimplicialComplex {
             Entry::Vacant(entry) => {
                 if dim == 0 {
                     assert!(
-                        self.simplices_by_dim[0].len() < self.max_n as usize,
+                        self.simplices_by_dim[0].len() < self.max_n,
                         "Exceeded the maximum number of vertices."
                     );
                 }
@@ -141,7 +141,7 @@ impl MapSimplicialComplex {
         }
 
         if dim > 0 {
-            let it = SimplexKeyBoundaryIterator::new(self.max_n as usize, dim, key);
+            let it = SimplexKeyBoundaryIterator::new(self.max_n, dim, key);
 
             for facet_key in it {
                 self.add_simplex_key_recursive(dim - 1, facet_key, added_simplices);
@@ -179,7 +179,7 @@ impl<'a> SimplicialComplex<'a> for MapSimplicialComplex {
         self.add_simplex_key_check_boundaries(dim, k)
     }
 
-    fn add_iter<I: SortedIterator<Item = Vertex>>(
+    fn add_iter<I: SortedIterator<Item = usize>>(
         &mut self,
         dim: Dimension,
         iter: I,
@@ -204,7 +204,7 @@ impl<'a> SimplicialComplex<'a> for MapSimplicialComplex {
         MapBoundaryIterator::new(self, dim, self.simplices_by_dim[dim][idx])
     }
 
-    fn simplex_boundary<I: SortedIterator<Item = Vertex>>(
+    fn simplex_boundary<I: SortedIterator<Item = usize>>(
         &'a self,
         dim: Dimension,
         simplex_iter: I,
@@ -213,7 +213,7 @@ impl<'a> SimplicialComplex<'a> for MapSimplicialComplex {
     }
 
     fn simplex_vertices(&self, dim: Dimension, idx: usize) -> Self::VertexIterator {
-        SimplexKeyVertexIterator::new(dim, self.simplices_by_dim[dim][idx], self.max_n as usize)
+        SimplexKeyVertexIterator::new(dim, self.simplices_by_dim[dim][idx], self.max_n)
     }
 }
 
@@ -231,11 +231,7 @@ impl MapBoundaryIterator<'_> {
     ) -> MapBoundaryIterator<'_> {
         MapBoundaryIterator {
             complex,
-            simplex_key_iterator: SimplexKeyBoundaryIterator::new(
-                complex.max_n as usize,
-                dimension,
-                key,
-            ),
+            simplex_key_iterator: SimplexKeyBoundaryIterator::new(complex.max_n, dimension, key),
         }
     }
 }
@@ -260,15 +256,15 @@ impl Iterator for MapBoundaryIterator<'_> {
 
 struct SimplexKeyBoundaryIterator {
     dimension: Dimension,
-    max_n: usize,
+    max_n: Vertex,
     iteration: Dimension,
-    current_power: usize,
+    current_power: Vertex,
     left_to_process: SimplexKey,
     processed: SimplexKey,
 }
 
 impl SimplexKeyBoundaryIterator {
-    fn new(max_n: usize, dimension: Dimension, key: SimplexKey) -> SimplexKeyBoundaryIterator {
+    fn new(max_n: Vertex, dimension: Dimension, key: SimplexKey) -> SimplexKeyBoundaryIterator {
         SimplexKeyBoundaryIterator {
             max_n,
             dimension,
@@ -287,10 +283,10 @@ impl Iterator for SimplexKeyBoundaryIterator {
         if self.iteration == self.dimension + 1 {
             return None;
         }
-        let next_power = self.current_power * self.max_n as usize;
-        let removed_v = self.left_to_process % self.max_n as usize;
+        let next_power = self.current_power * self.max_n;
+        let removed_v = self.left_to_process % self.max_n;
 
-        self.left_to_process /= self.max_n as usize;
+        self.left_to_process /= self.max_n;
         let face = self.left_to_process * self.current_power + self.processed;
 
         self.processed += removed_v * self.current_power;
@@ -327,7 +323,7 @@ impl Iterator for SimplexKeyVertexIterator {
         let v = self.key % self.modulo;
         self.key /= self.modulo;
         self.vertices_left -= 1;
-        Some((v as usize).try_into().unwrap())
+        Some(v)
     }
 }
 
@@ -339,31 +335,30 @@ pub(crate) fn is_sorted<T: Ord>(data: &[T]) -> bool {
 mod tests {
     use crate::simplicial_complex::MapSimplicialComplex;
     use crate::simplicial_complex::SimplicialComplex;
-    use crate::Vertex;
 
     #[test]
     fn simplex_add_one_by_one() {
         let mut s = MapSimplicialComplex::new(10, 10);
-        s.add(&[0]);
-        s.add(&[1]);
-        s.add(&[2]);
-        s.add(&[0, 1]);
-        s.add(&[1, 2]);
-        s.add(&[0, 2]);
-        s.add(&[0, 1, 2]);
+        s.add(&[0usize]);
+        s.add(&[1usize]);
+        s.add(&[2usize]);
+        s.add(&[0usize, 1usize]);
+        s.add(&[1usize, 2usize]);
+        s.add(&[0usize, 2usize]);
+        s.add(&[0usize, 1usize, 2usize]);
         // No errors should have been raised.
     }
 
     #[test]
     fn boundary_iterator_happy_case() {
         let mut s = MapSimplicialComplex::new(10, 10);
-        s.add(&[0]);
-        s.add(&[1]);
-        s.add(&[2]);
-        s.add(&[0, 1]);
-        s.add(&[1, 2]);
-        s.add(&[0, 2]);
-        let (dim, idx) = s.add(&[0, 1, 2]).unwrap();
+        s.add(&[0usize]);
+        s.add(&[1usize]);
+        s.add(&[2usize]);
+        s.add(&[0usize, 1usize]);
+        s.add(&[1usize, 2usize]);
+        s.add(&[0usize, 2usize]);
+        let (dim, idx) = s.add(&[0usize, 1usize, 2usize]).unwrap();
         let it = s.boundary_iterator(dim, idx);
         let result: Vec<_> = it.collect();
         assert_eq!(vec![1, 2, 0], result);
@@ -372,8 +367,8 @@ mod tests {
     #[test]
     fn vertices_iterator_happy_case() {
         let mut s = MapSimplicialComplex::new(10, 10);
-        let &(dim, added_idx) = s.add_recursive(&[0, 1, 2]).first().unwrap();
-        let vertices: Vec<Vertex> = s.simplex_vertices(dim, added_idx).collect();
+        let &(dim, added_idx) = s.add_recursive(&[0usize, 1usize, 2usize]).first().unwrap();
+        let vertices: Vec<usize> = s.simplex_vertices(dim, added_idx).collect();
         assert_eq!(vertices, [0, 1, 2]);
     }
 }

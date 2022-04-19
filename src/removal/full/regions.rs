@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use crate::edges::FilteredEdge;
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::full::stripes::{Stripe, Stripes};
-use crate::{CriticalGrade, OneCriticalGrade, Value, Vertex};
+use crate::{CriticalGrade, OneCriticalGrade, Value};
 
 pub type Pair<VF> = (OneCriticalGrade<VF, 2>, OneCriticalGrade<VF, 2>);
 
@@ -35,7 +35,7 @@ impl<VF: Value> NonDominationRegion<VF> {
 pub(crate) fn calculate_non_domination_region<VF: Value>(
     adjacency_matrix: &AdjacencyMatrix<OneCriticalGrade<VF, 2>>,
     edge: &FilteredEdge<OneCriticalGrade<VF, 2>>,
-    v: Vertex,
+    v: usize,
     value_v: OneCriticalGrade<VF, 2>,
 ) -> NonDominationRegion<VF> {
     let mut vertical_stripes = Vec::new();

@@ -3,7 +3,7 @@ use num::Zero;
 use std::cmp::max;
 
 use crate::edges::{BareEdge, FilteredEdge};
-use crate::{OneCriticalGrade, Value, Vertex};
+use crate::{OneCriticalGrade, Value};
 
 pub mod density_estimation;
 pub mod input;
@@ -116,12 +116,7 @@ impl<'a, T: Value> Iterator for EdgeIterator<'a, T> {
     type Item = FilteredEdge<OneCriticalGrade<T, 1>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_edge
-            == BareEdge(
-                (self.matrix.len() - 1) as Vertex,
-                (self.matrix.len() - 2) as Vertex,
-            )
-        {
+        if self.current_edge == BareEdge(self.matrix.len() - 1, self.matrix.len() - 2) {
             return None;
         }
         self.current_edge = Self::increment_edge(self.current_edge);
@@ -130,9 +125,7 @@ impl<'a, T: Value> Iterator for EdgeIterator<'a, T> {
             self.current_edge = Self::increment_edge(self.current_edge);
         }
         Some(FilteredEdge {
-            grade: OneCriticalGrade([*self
-                .matrix
-                .get(self.current_edge.0 as usize, self.current_edge.1 as usize)]),
+            grade: OneCriticalGrade([*self.matrix.get(self.current_edge.0, self.current_edge.1)]),
             edge: self.current_edge,
         })
     }

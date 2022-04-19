@@ -26,8 +26,6 @@ mod filtration;
 mod io_utils;
 mod simplicial_complex;
 
-pub type Vertex = u16;
-
 /// A generic value, like usize or i32, that we can use as grades in a bifiltered graph.
 pub trait Value:
     Zero

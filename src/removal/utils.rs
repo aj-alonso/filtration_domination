@@ -1,6 +1,6 @@
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
-use crate::{CriticalGrade, OneCriticalGrade, Value, Vertex};
+use crate::{CriticalGrade, OneCriticalGrade, Value};
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 
@@ -55,7 +55,7 @@ fn is_dominated_at_time_by<G: CriticalGrade>(
     adjacency_matrix: &AdjacencyMatrix<G>,
     edge: &FilteredEdge<G>,
     critical_value: &G,
-    neigh_vertex: Vertex,
+    neigh_vertex: usize,
 ) -> bool {
     let other_neighs = adjacency_matrix
         .closed_neighbours(neigh_vertex, critical_value.clone())
