@@ -11,13 +11,18 @@ use std::fmt::Formatter;
 
 const HOMOLOGY: usize = 1;
 
-/// Run experiments for edge collapse
+/// Run the removal algorithms on the datasets.
 #[derive(Debug, Parser)]
 #[clap(author, version, about, long_about = None)]
 struct RunCli {
     /// Dataset in which to remove edges.
     #[clap(arg_enum)]
     dataset: Dataset,
+
+    /// Whether to compute a minimal presentation on the full edges
+    /// (that is, the edges before running the removal algorithm).
+    #[clap(short, long)]
+    minimal_presentation_full: bool,
 
     /// Whether to use strong filtration-domination.
     #[clap(short, long)]
@@ -124,19 +129,21 @@ fn main() -> anyhow::Result<()> {
     );
     println!("Removal took {duration:?}");
 
-    println!("Running mpfree on full edges...");
-    let mpfree_no_collapse =
-        compute_minimal_presentation(&format!("test_mpfree_{}", dataset), HOMOLOGY, &edges)?;
-
     println!("Running mpfree on remaining edges...");
-    let mpfree_collapse = compute_minimal_presentation(
+    let mpfree_remaining = compute_minimal_presentation(
         &format!("test_mpfree_{}_strong_collapse", dataset),
         HOMOLOGY,
         &remaining_edges,
     )?;
 
-    assert_eq!(mpfree_collapse.output, mpfree_no_collapse.output);
-    println!("{:?}", mpfree_collapse.output);
+    if opts.minimal_presentation_full {
+        println!("Running mpfree on full edges...");
+        let mpfree_no_collapse =
+            compute_minimal_presentation(&format!("test_mpfree_{}", dataset), HOMOLOGY, &edges)?;
+        assert_eq!(mpfree_remaining.output, mpfree_no_collapse.output);
+    }
+
+    println!("{:?}", mpfree_remaining.output);
 
     Ok(())
 }
