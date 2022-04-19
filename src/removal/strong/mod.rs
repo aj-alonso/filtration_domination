@@ -1,5 +1,5 @@
 use crate::edges::{EdgeList, FilteredEdge};
-use crate::removal::adjacency::{AdjacencyMatrix, VertexAdjacency};
+use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::EdgeOrder;
 use crate::CriticalGrade;
 use std::cmp::Ordering;
@@ -61,28 +61,34 @@ fn is_strongly_filtration_dominated<G: CriticalGrade>(
 ) -> bool {
     for (v, value_v) in adjacency_matrix.common_neighbours(edge) {
         let edge_neighs = adjacency_matrix.closed_neighbours_edge(edge);
-        if is_subset(edge_neighs, &adjacency_matrix.matrix[v], v, value_v) {
+        let v_neighs = adjacency_matrix.closed_neighbours(v, value_v.join(&edge.grade));
+        if is_subset(edge_neighs, v_neighs) {
             return true;
         }
     }
     false
 }
 
-fn is_subset<G: CriticalGrade, I>(left: I, v_neighs: &VertexAdjacency<G>, v: usize, value_v: G) -> bool
+fn is_subset<G: CriticalGrade, I, J>(left: I, mut right: J) -> bool
 where
     I: Iterator<Item = (usize, G)>,
+    J: Iterator<Item = (usize, G)>,
 {
-    for (a, value_a) in left {
-        if a == v {
-            continue;
-        }
-        if let Some(value_edge) = v_neighs.get(&a) {
-            if !value_edge.lte(&value_a) {
-                return false;
+    'next_a: for (a, value_a) in left {
+        for (b, value_b) in right.by_ref() {
+            match a.cmp(&b) {
+                Ordering::Less => break,
+                Ordering::Equal => {
+                    if value_b.lte(&value_a) {
+                        continue 'next_a;
+                    } else {
+                        break;
+                    }
+                }
+                Ordering::Greater => continue,
             }
-        } else {
-            return false;
         }
+        return false;
     }
     true
 }

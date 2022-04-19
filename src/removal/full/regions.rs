@@ -41,26 +41,47 @@ pub(crate) fn calculate_non_domination_region<VF: Value>(
     let mut vertical_stripes = Vec::new();
     let mut horizontal_stripes = Vec::new();
 
-    let mut edge_neighs = adjacency_matrix.closed_neighbours_edge(edge);
+    let mut edge_neighs = adjacency_matrix.closed_neighbours_edge(edge).peekable();
     let mut v_neighs = adjacency_matrix
         .closed_neighbours(v, value_v.join(&edge.grade))
         .peekable();
-    for (a, value_a) in edge_neighs {
-        if a == v {
-            continue;
-        }
-        if let Some(value_b) = adjacency_matrix.matrix[v].get(&a) {
-            add_pair(
-                &mut vertical_stripes,
-                &mut horizontal_stripes,
-                (value_a.clone(), value_a.join(value_b)),
-            );
+    while let Some((a, value_a)) = edge_neighs.peek() {
+        if let Some((b, value_b)) = v_neighs.peek() {
+            match a.cmp(b) {
+                // The current vertex of edge_neighs is not in v_neighs.
+                // This vertex will never get dominated.
+                Ordering::Less => {
+                    add_pair(
+                        &mut vertical_stripes,
+                        &mut horizontal_stripes,
+                        (*value_a, OneCriticalGrade::max_value()),
+                    );
+                    // Advance edge_neighs.
+                    edge_neighs.next();
+                }
+                // The current vertex of edge_neighs is in v_neighs.
+                // This vertex will get eventually dominated.
+                Ordering::Equal => {
+                    add_pair(
+                        &mut vertical_stripes,
+                        &mut horizontal_stripes,
+                        (*value_a, value_a.join(value_b)),
+                    );
+                    // Advance edge_neighs.
+                    edge_neighs.next();
+                }
+                Ordering::Greater => {
+                    v_neighs.next();
+                }
+            }
         } else {
             add_pair(
                 &mut vertical_stripes,
                 &mut horizontal_stripes,
-                (value_a.clone(), OneCriticalGrade::max_value()),
+                (*value_a, OneCriticalGrade::max_value()),
             );
+            // Advance edge_neighs.
+            edge_neighs.next();
         }
     }
 
