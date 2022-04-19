@@ -15,6 +15,7 @@ use std::slice::Iter;
 
 pub mod edges;
 
+pub mod datasets;
 pub mod distance_matrix;
 pub mod mpfree;
 pub mod points;

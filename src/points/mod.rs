@@ -1,6 +1,7 @@
 pub mod input;
 pub mod output;
 
+use crate::distance_matrix::DistanceMatrix;
 use num::Float;
 use ordered_float::OrderedFloat;
 use rand::distributions::Distribution;
@@ -108,18 +109,18 @@ impl<T: Float, const N: usize> PointCloud<T, N> {
         self.0.push(p)
     }
 
-    // /// Return the distance matrix of the point cloud, where the order is the order in which the
-    // /// points where added.
-    // pub fn distance_matrix(&self) -> DistanceMatrix<T> {
-    //     let n = self.len();
-    //     let mut matrix = DistanceMatrix::new(n);
-    //     for u in 0..n {
-    //         for v in (u + 1)..n {
-    //             matrix.set(u, v, self.0[u].euclidean_distance(&self.0[v]))
-    //         }
-    //     }
-    //     matrix
-    // }
+    /// Return the distance matrix of the point cloud, where the order is the order in which the
+    /// points where added.
+    pub fn distance_matrix(&self) -> DistanceMatrix<T> {
+        let n = self.len();
+        let mut matrix = DistanceMatrix::new(n);
+        for u in 0..n {
+            for v in (u + 1)..n {
+                matrix.set(u, v, self.0[u].euclidean_distance(&self.0[v]))
+            }
+        }
+        matrix
+    }
 
     /// Returns the number of points in the point cloud.
     pub fn len(&self) -> usize {
