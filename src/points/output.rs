@@ -1,3 +1,4 @@
+//! Utilities to write point clouds to disk.
 use num::Float;
 
 use crate::points::PointCloud;

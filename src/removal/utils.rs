@@ -1,3 +1,4 @@
+//! Utilities to study bifiltered graphs.
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 

@@ -4,7 +4,7 @@
 
 #![warn(clippy::shadow_unrelated)]
 #![warn(clippy::needless_pass_by_value)]
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 #![allow(clippy::needless_range_loop)]
 
 use num::{Bounded, Zero};

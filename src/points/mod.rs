@@ -1,3 +1,4 @@
+//! Point clouds: create and modify them.
 use num::Float;
 use ordered_float::OrderedFloat;
 use rand::distributions::Distribution;

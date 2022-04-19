@@ -1,3 +1,4 @@
+//! Interface with mpfree that allows to compute minimal presentations.
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter};
 use std::path::Path;
@@ -14,12 +15,14 @@ use crate::{CriticalGrade, Value};
 
 const TMP_DIRECTORY: &str = "tmp";
 
+/// The time taken to run mpfree, and the parsed output.
 #[derive(Debug, Clone)]
-pub struct MinimalPresentationResult {
+pub struct MinimalPresentationComputationSummary {
     pub timers: MinimalPresentationComputationTime,
     pub output: ParsedMpfreeOutput,
 }
 
+/// Timers related to minimal presentation computation.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct MinimalPresentationComputationTime {
     build_filtration: Duration,
@@ -27,17 +30,22 @@ pub struct MinimalPresentationComputationTime {
     mpfree: Duration,
 }
 
+/// Summaries of the minimal presentation computed by mpfree.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct ParsedMpfreeOutput {
     pub parameters: usize,
     pub sizes: [usize; 3],
 }
 
+/// Compute a minimal presentation of the homology at the given dimension of the clique bifiltration
+/// of the given bifiltered edge list.
+///
+/// The `name` parameter is used to name and identify temporary files.
 pub fn compute_minimal_presentation<VF: Value, G: CriticalGrade>(
     name: &str,
     homology: usize,
     edge_list: &EdgeList<FilteredEdge<G>>,
-) -> Result<MinimalPresentationResult, MpfreeError>
+) -> Result<MinimalPresentationComputationSummary, MpfreeError>
 where
     Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
 {
@@ -66,7 +74,7 @@ where
     let output = run_mpfree(filepath_mpfree_input, filepath_out)?;
     timers.mpfree = start_mpfree.elapsed();
 
-    Ok(MinimalPresentationResult { timers, output })
+    Ok(MinimalPresentationComputationSummary { timers, output })
 }
 
 fn write_bifiltration<

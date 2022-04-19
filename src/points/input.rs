@@ -1,3 +1,4 @@
+//! Utilities to read point clouds from disk.
 use num::Float;
 use std::fmt::Display;
 use std::io;
