@@ -145,8 +145,9 @@ where
                        "Programming error: the index of an added simplex is the total number of simplices in that dimension.");
             if dimension > 0 {
                 for boundary_idx in self.complex.boundary_iterator(dimension, idx) {
-                    // TODO: revisit this.
-                    assert!(self.grades[dimension - 1][boundary_idx].lte(&g), "The grade of a simplex is greater than or equal to the grade of its facets: {:?} is not lte than {:?}.", self.grades[dimension - 1][boundary_idx], g);
+                    assert!(self.grades[dimension - 1][boundary_idx].lte(&g),
+                            "The grade of a simplex cannot be greater than the grade of its facets: {:?} is not lte than {:?}.",
+                            self.grades[dimension - 1][boundary_idx], g);
                 }
             }
             self.grades[dimension].push(g);

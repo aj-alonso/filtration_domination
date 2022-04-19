@@ -78,7 +78,6 @@ impl MapSimplicialComplex {
     }
 
     /// Get the simplex key from a stream of vertices.
-    /// TODO: maybe check that the number of vertices used match a given dimension?
     fn simplex_to_key<I: SortedIterator<Item = usize>>(&self, iter: I) -> SimplexKey {
         let mut k: SimplexKey = 0;
         let mut exp: SimplexKey = 1;
@@ -167,7 +166,6 @@ impl<'a> SimplicialComplex<'a> for MapSimplicialComplex {
     }
 
     fn boundary_iterator(&'a self, dim: Dimension, idx: usize) -> Self::BoundaryIterator {
-        // TODO: add bounds checks?
         MapBoundaryIterator::new(self, dim, self.simplices_by_dim[dim][idx])
     }
 
