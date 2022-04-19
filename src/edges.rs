@@ -174,6 +174,7 @@ pub struct EdgeList<E> {
 }
 
 impl<E: Edge> EdgeList<E> {
+    /// New empty edge list.
     pub fn new(n_vertices: usize) -> Self {
         Self {
             n_vertices,
@@ -181,27 +182,33 @@ impl<E: Edge> EdgeList<E> {
         }
     }
 
+    /// Returns the underlying slice of edges.
     pub fn edges(&self) -> &[E] {
         &self.edges
     }
 
+    /// Returns a mutable slice of the underlying slice of edges.
     pub fn edges_mut(&mut self) -> &mut [E] {
         &mut self.edges
     }
 
+    /// Returns the number of edges.
     pub fn len(&self) -> usize {
         self.edges.len()
     }
 
+    /// Returns whether there are edges.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Collects all the edges from the given iterator.
     pub fn from_iterator<I: Iterator<Item = E>>(it: I) -> Self {
         let edges: Vec<E> = it.collect();
         edges.into()
     }
 
+    /// Returns the number of vertices.
     pub fn number_of_vertices(&self) -> usize {
         self.n_vertices
     }
@@ -218,6 +225,7 @@ impl<E: Edge> EdgeList<E> {
         self.edges.push(e);
     }
 
+    /// Returns an iterator over the edges.
     pub fn edge_iter(&self) -> impl Iterator<Item = &E> + '_ {
         self.edges.iter()
     }
@@ -250,24 +258,29 @@ impl<E: Edge> EdgeList<E> {
 }
 
 impl<VF: Value, const N: usize> EdgeList<FilteredEdge<OneCriticalGrade<VF, N>>> {
+    /// Sort the filtered edges lexicographically in increasing order.
     pub fn sort_lexicographically(&mut self) {
         self.edges.sort()
     }
 
+    /// Reverse sort the filtered edges lexicographically.
     pub fn sort_reverse_lexicographically(&mut self) {
         self.edges.sort_by(|a, b| b.cmp(a))
     }
 
+    /// Sort the filtered edges colexicographically in increasing order.
     pub fn sort_colexicographically(&mut self) {
         self.edges
             .sort_by(|a, b| a.cmp_by(b, OneCriticalGrade::cmp_colexicographically))
     }
 
+    /// Reverse sort the filtered edges colexicographically.
     pub fn sort_reverse_colexicographically(&mut self) {
         self.edges
             .sort_by(|a, b| b.cmp_by(a, OneCriticalGrade::cmp_colexicographically))
     }
 
+    /// Put a random order on the edges..
     pub fn shuffle(&mut self) {
         self.edges.shuffle(&mut thread_rng())
     }

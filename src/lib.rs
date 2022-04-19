@@ -4,7 +4,6 @@
 
 #![warn(clippy::shadow_unrelated)]
 #![warn(clippy::needless_pass_by_value)]
-#![warn(missing_docs)]
 #![allow(clippy::needless_range_loop)]
 
 use num::{Bounded, Zero};
@@ -60,14 +59,20 @@ impl<T> Value for T where
 pub trait CriticalGrade:
     Clone + PartialOrd + Ord + std::fmt::Debug + std::marker::Sync + std::marker::Send
 {
+    /// Minimum possible value.
     fn min_value() -> Self;
+    /// Maximum possible value.
     fn max_value() -> Self;
+    /// Zero value.
     fn zero() -> Self;
 
+    /// The least upper bound of the given grades.
     #[must_use]
     fn join(&self, other: &Self) -> Self;
 
+    /// Less than or equal to the other grade.
     fn lte(&self, other: &Self) -> bool;
+    /// Grater than or equal to the other grade.
     fn gte(&self, other: &Self) -> bool;
 
     /// Returns true if self is incomparable to other, meaning that neither self <= other and neither
@@ -76,6 +81,7 @@ pub trait CriticalGrade:
         !self.lte(other) && !self.gte(other)
     }
 
+    /// Number of parameters.
     fn parameters() -> usize;
 }
 

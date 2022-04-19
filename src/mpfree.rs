@@ -93,6 +93,7 @@ fn write_bifiltration<
     Ok(())
 }
 
+/// A error that happened when executing mpfree.
 #[derive(Error, Debug)]
 pub enum MpfreeError {
     #[error("Mpfree ended with a non-okay exit code: {0}")]
