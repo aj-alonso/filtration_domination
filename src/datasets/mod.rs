@@ -1,14 +1,22 @@
+//! Dataset reading and sampling.
+//!
+//! The main entry point is [get_dataset_density_edge_list], which returns a bifiltered edge list.
+use crate::datasets::distance_matrices::get_dataset_distance_matrix;
+use crate::distance_matrix::density_estimation::DensityEstimator;
+use crate::distance_matrix::DistanceMatrix;
+use crate::edges::{BareEdge, EdgeList, FilteredEdge};
+use crate::{OneCriticalGrade, Value};
+use ordered_float::OrderedFloat;
+use std::cmp::max;
 use std::fmt::Formatter;
+use std::io;
 
 mod distance_matrices;
-mod graphs;
-mod points;
-
-pub use graphs::get_dataset_density_edge_list;
-pub use graphs::Threshold;
+mod sampling;
 
 const DATASET_DIRECTORY: &str = "datasets";
 
+/// All datasets that we support.
 #[derive(Debug, Copy, Clone)]
 pub enum Dataset {
     Senate,
@@ -58,4 +66,65 @@ impl std::fmt::Display for Dataset {
             }
         }
     }
+}
+
+/// Possible thresholding settings.
+#[derive(Debug, Copy, Clone)]
+pub enum Threshold {
+    /// Keep all edges.
+    KeepAll,
+    /// Restrict to the edges of length less than the given percentile of all distances.
+    Percentile(f64),
+    /// Restrict to the edges of length less that the given value.
+    Fixed(f64),
+}
+
+/// Return the edge list of the associated dataset. Each edge is bifiltered by codensity and length.
+/// Codensity means that we order the density parameter from densest to least dense.
+///
+/// Possibly removes some edges according to `threshold`. See [Threshold].
+/// If a `estimator` is not provided, the function uses the Gaussian kernel estimator with
+/// bandwidth parameter set to the 20th percentile of the distances.
+/// If `use_cache` is set, the function caches the distance matrices of the sampled datasets.
+pub fn get_dataset_density_edge_list(
+    dataset: Dataset,
+    threshold: Threshold,
+    estimator: Option<DensityEstimator<OrderedFloat<f64>>>,
+    use_cache: bool,
+) -> io::Result<EdgeList<FilteredEdge<OneCriticalGrade<OrderedFloat<f64>, 2>>>> {
+    let distance_matrix = get_dataset_distance_matrix(dataset, use_cache)?;
+
+    let estimator = estimator.unwrap_or_else(|| default_estimator(&distance_matrix));
+    let mut estimations = estimator.estimate(&distance_matrix);
+    // Instead of working with densities, we work with codensities. That is, smaller values correspond
+    // to more dense vertices.
+    for e in estimations.iter_mut() {
+        *e = OrderedFloat::from(1.0) - *e;
+    }
+
+    let edges = distance_matrices::get_distance_matrix_edge_list(&distance_matrix, threshold);
+
+    let density_edges_it = edges.edges().iter().map(|edge| {
+        let FilteredEdge {
+            grade: OneCriticalGrade([dist]),
+            edge: BareEdge(u, v),
+        } = edge;
+
+        // The edge density is the max of the codensity of its vertices.
+        let edge_density = max(estimations[*u], estimations[*v]);
+
+        FilteredEdge {
+            grade: OneCriticalGrade([edge_density, *dist]),
+            edge: BareEdge(*u, *v),
+        }
+    });
+
+    Ok(EdgeList::from_iterator(density_edges_it))
+}
+
+fn default_estimator<F: Value + std::fmt::Display>(
+    matrix: &DistanceMatrix<F>,
+) -> DensityEstimator<F> {
+    let bandwidth = matrix.percentile(0.2);
+    DensityEstimator::Gaussian(*bandwidth)
 }

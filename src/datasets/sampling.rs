@@ -5,7 +5,7 @@ use rand::distributions::Uniform;
 use rand::Rng;
 use std::f64::consts::PI;
 
-/// Sample n points from \[0,1\]^DIM uniformly.
+/// Sample n points from `\[0,1\]^DIM` uniformly.
 pub fn sample_random_points<T: Float + SampleUniform, const DIM: usize>(
     n: usize,
 ) -> PointCloud<T, DIM> {
@@ -24,7 +24,7 @@ pub fn sample_random_points<T: Float + SampleUniform, const DIM: usize>(
     point_cloud
 }
 
-/// Sample points from a torus in R^3.
+/// Sample points from a torus in `R^3`.
 pub fn sample_torus(n: usize) -> PointCloud<f64, 3> {
     let radius = 0.5;
     let center_distance = 2.;
