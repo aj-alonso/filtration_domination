@@ -1,14 +1,13 @@
-pub mod input;
-pub mod output;
-
-use crate::distance_matrix::DistanceMatrix;
 use num::Float;
 use ordered_float::OrderedFloat;
 use rand::distributions::Distribution;
 use rand::Rng;
 use std::fmt::Formatter;
 
-// use crate::graph::distance_matrix::DistanceMatrix;
+use crate::distance_matrix::DistanceMatrix;
+
+pub mod input;
+pub mod output;
 
 /// A point in `R^N`.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

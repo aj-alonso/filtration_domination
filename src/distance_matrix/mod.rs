@@ -1,4 +1,5 @@
-//! Distance matrix abstraction.
+//! Distance matrices: reading them, outputting them, and handling them,
+//! including density estimation.
 use num::Zero;
 use std::cmp::max;
 
@@ -9,16 +10,14 @@ pub mod density_estimation;
 pub mod input;
 pub mod output;
 
-pub trait Distance: Zero + Clone {}
-impl<T> Distance for T where T: Zero + Clone {}
-
 /// Stores a distance matrix of a number of vertices.
 pub struct DistanceMatrix<T> {
     // We store a lower triangular distance matrix.
     distances: Vec<Vec<T>>,
 }
 
-impl<T: Distance> DistanceMatrix<T> {
+impl<T: Zero + Clone> DistanceMatrix<T> {
+    /// Create a new distance matrix on the given number of points.
     pub fn new(n: usize) -> DistanceMatrix<T> {
         let mut distances = Vec::with_capacity(n);
         for v in 0..n {
@@ -27,20 +26,8 @@ impl<T: Distance> DistanceMatrix<T> {
         DistanceMatrix { distances }
     }
 
-    /// Returns the number of vertices.
-    pub fn len(&self) -> usize {
-        self.distances.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.distances.is_empty()
-    }
-
-    pub fn get(&self, u: usize, v: usize) -> &T {
-        let (new_u, new_v) = max_min(u, v);
-        &self.distances[new_u][new_v]
-    }
-
+    /// Set the distance between two points.
+    /// Panics when u == v.
     pub fn set(&mut self, u: usize, v: usize, d: T) {
         if u == v {
             if !d.is_zero() {
@@ -53,7 +40,25 @@ impl<T: Distance> DistanceMatrix<T> {
     }
 }
 
-impl<T: Distance + Ord> DistanceMatrix<T> {
+impl<T> DistanceMatrix<T> {
+    /// Returns the number of points.
+    pub fn len(&self) -> usize {
+        self.distances.len()
+    }
+
+    /// Returns whether the distance matrix is empty.
+    pub fn is_empty(&self) -> bool {
+        self.distances.is_empty()
+    }
+
+    /// Returns the distance between two points.
+    pub fn get(&self, u: usize, v: usize) -> &T {
+        let (new_u, new_v) = max_min(u, v);
+        &self.distances[new_u][new_v]
+    }
+}
+
+impl<T: Zero + Clone + Ord> DistanceMatrix<T> {
     /// Calculates the given percentile (from 0.0 to 1.0) of the distances.
     pub fn percentile(&self, percentile: f64) -> &T {
         let mut all_distances = Vec::with_capacity(self.len() * self.len());
@@ -68,7 +73,7 @@ impl<T: Distance + Ord> DistanceMatrix<T> {
     }
 
     /// Calculates the eccentricity (maximum distance of a vertex to any other vertex) of each vertex,
-    /// in a simple O(n^2) way.
+    /// in a straightforward O(n^2) way.
     pub fn eccentricity_vector(&self) -> Vec<T> {
         let mut eccentricities = Vec::with_capacity(self.len());
         for u in 0..self.len() {
@@ -83,11 +88,15 @@ impl<T: Distance + Ord> DistanceMatrix<T> {
 }
 
 impl<T: Value> DistanceMatrix<T> {
+    /// Returns an iterator that goes through all edges on the complete graph associated to
+    /// this distance matrix.
     pub fn edges(&self) -> EdgeIterator<'_, T> {
         EdgeIterator::new(self)
     }
 }
 
+/// Iterator that outputs the edges on the complete graph associated to a distance matrix.
+/// See [DistanceMatrix::edges].
 pub struct EdgeIterator<'a, T> {
     matrix: &'a DistanceMatrix<T>,
     current_edge: BareEdge,

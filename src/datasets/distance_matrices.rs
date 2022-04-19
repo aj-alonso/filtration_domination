@@ -1,3 +1,9 @@
+use num::Float;
+use ordered_float::OrderedFloat;
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
+use std::{fs, io};
+
 use crate::datasets::sampling::{
     sample_noisy_sphere, sample_random_points, sample_swiss_roll, sample_torus,
 };
@@ -8,11 +14,6 @@ use crate::distance_matrix::DistanceMatrix;
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::points::PointCloud;
 use crate::{OneCriticalGrade, Value};
-use num::Float;
-use ordered_float::OrderedFloat;
-use std::io::{BufReader, BufWriter};
-use std::path::Path;
-use std::{fs, io};
 
 /// Returns the distance matrix of the given dataset.
 pub fn get_dataset_distance_matrix(

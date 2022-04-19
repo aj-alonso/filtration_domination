@@ -1,11 +1,10 @@
+use num::Float;
 use std::fmt::Display;
 use std::io;
 use std::io::BufRead;
 use std::str::FromStr;
 
 use crate::io_utils::parse_next;
-use num::Float;
-
 use crate::points::{Point, PointCloud};
 
 /// Read a point cloud from the given reader.

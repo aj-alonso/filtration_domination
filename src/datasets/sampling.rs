@@ -1,9 +1,10 @@
-use crate::points::{Point, PointCloud};
 use num::Float;
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::Uniform;
 use rand::Rng;
 use std::f64::consts::PI;
+
+use crate::points::{Point, PointCloud};
 
 /// Sample n points from `\[0,1\]^DIM` uniformly.
 pub fn sample_random_points<T: Float + SampleUniform, const DIM: usize>(

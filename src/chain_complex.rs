@@ -1,5 +1,6 @@
-use crate::{CriticalGrade, OneCriticalGrade, Value};
 use std::io;
+
+use crate::{CriticalGrade, OneCriticalGrade, Value};
 
 /// A column with coefficients in Z2.
 #[derive(Debug, Clone)]

@@ -27,14 +27,11 @@ pub trait SimplicialComplex<'a> {
     /// The iterator must produce ordered items.
     /// The iterator must produce exactly dim + 1 items.
     /// The boundaries of the simplex must have been added before.
-    /// TODO: change this to accept an iterator of usize, rather than &usize.
     fn add_iter<I: SortedIterator<Item = usize>>(
         &mut self,
         dim: Dimension,
         iter: I,
     ) -> Option<(Dimension, usize)>;
-
-    fn add_recursive(&mut self, s: &[Vertex]) -> Vec<(Dimension, usize)>;
 
     /// Returns an iterator over the boundary of the simplex of the given index.
     /// The iterator returns the indexes of the simplexes in the boundary.
@@ -130,25 +127,6 @@ impl MapSimplicialComplex {
         }
     }
 
-    fn add_simplex_key_recursive(
-        &mut self,
-        dim: Dimension,
-        key: SimplexKey,
-        added_simplices: &mut Vec<(Dimension, usize)>,
-    ) {
-        if let Some(added_simplex) = self.add_simplex_key(dim, key) {
-            added_simplices.push(added_simplex);
-        }
-
-        if dim > 0 {
-            let it = SimplexKeyBoundaryIterator::new(self.max_n, dim, key);
-
-            for facet_key in it {
-                self.add_simplex_key_recursive(dim - 1, facet_key, added_simplices);
-            }
-        }
-    }
-
     fn has_simplex_key(&self, dim: Dimension, k: &SimplexKey) -> bool {
         self.key_to_idx[dim].contains_key(k)
     }
@@ -186,17 +164,6 @@ impl<'a> SimplicialComplex<'a> for MapSimplicialComplex {
     ) -> Option<(Dimension, usize)> {
         let key = self.simplex_to_key(iter);
         self.add_simplex_key_check_boundaries(dim, key)
-    }
-
-    fn add_recursive(&mut self, s: &[Vertex]) -> Vec<(Dimension, usize)> {
-        let dim = s.len() - 1;
-        let k = self.simplex_to_key(s.iter().copied().assume_sorted_by_item());
-
-        let mut added_simplices: Vec<(Dimension, usize)> = Vec::new();
-
-        self.add_simplex_key_recursive(dim, k, &mut added_simplices);
-
-        added_simplices
     }
 
     fn boundary_iterator(&'a self, dim: Dimension, idx: usize) -> Self::BoundaryIterator {
@@ -367,8 +334,14 @@ mod tests {
     #[test]
     fn vertices_iterator_happy_case() {
         let mut s = MapSimplicialComplex::new(10, 10);
-        let &(dim, added_idx) = s.add_recursive(&[0usize, 1usize, 2usize]).first().unwrap();
-        let vertices: Vec<usize> = s.simplex_vertices(dim, added_idx).collect();
+        s.add(&[0usize]);
+        s.add(&[1usize]);
+        s.add(&[2usize]);
+        s.add(&[0usize, 1usize]);
+        s.add(&[1usize, 2usize]);
+        s.add(&[0usize, 2usize]);
+        let (dim, idx) = s.add(&[0usize, 1usize, 2usize]).unwrap();
+        let vertices: Vec<usize> = s.simplex_vertices(dim, idx).collect();
         assert_eq!(vertices, [0, 1, 2]);
     }
 }

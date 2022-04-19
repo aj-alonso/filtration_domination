@@ -1,15 +1,16 @@
 //! Dataset reading and sampling.
 //!
 //! The main entry point is [get_dataset_density_edge_list], which returns a bifiltered edge list.
+use ordered_float::OrderedFloat;
+use std::cmp::max;
+use std::fmt::Formatter;
+use std::io;
+
 use crate::datasets::distance_matrices::get_dataset_distance_matrix;
 use crate::distance_matrix::density_estimation::DensityEstimator;
 use crate::distance_matrix::DistanceMatrix;
 use crate::edges::{BareEdge, EdgeList, FilteredEdge};
 use crate::{OneCriticalGrade, Value};
-use ordered_float::OrderedFloat;
-use std::cmp::max;
-use std::fmt::Formatter;
-use std::io;
 
 mod distance_matrices;
 mod sampling;
@@ -19,15 +20,25 @@ const DATASET_DIRECTORY: &str = "datasets";
 /// All datasets that we support.
 #[derive(Debug, Copy, Clone)]
 pub enum Dataset {
+    /// The senate dataset from <https://github.com/n-otter/PH-roadmap>.
     Senate,
+    /// The eleg dataset from <https://github.com/n-otter/PH-roadmap>.
     Eleg,
+    /// The netwsc dataset from <https://github.com/n-otter/PH-roadmap>.
     Netwsc,
+    /// The hiv dataset from <https://github.com/n-otter/PH-roadmap>.
     Hiv,
+    /// The dragon dataset from <https://github.com/n-otter/PH-roadmap>.
     Dragon,
+    /// A circle in R^2.
     Circle { n_points: usize },
+    /// A noisy sphere in R^3.
     Sphere { n_points: usize },
+    /// A torus sphere in R^3.
     Torus { n_points: usize },
+    /// A swiss roll, that is, a plane rolled up in a spiral in R^3.
     SwissRoll { n_points: usize },
+    /// Points sampled uniformly from a square in the plane.
     Uniform { n_points: usize },
 }
 

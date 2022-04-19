@@ -1,16 +1,16 @@
 //! Utilities to read graphs and distance matrices from files.
-
+use num::Zero;
 use std::fmt::Display;
 use std::io;
 use std::io::BufRead;
 use std::str::FromStr;
 
-use crate::distance_matrix::{Distance, DistanceMatrix};
+use crate::distance_matrix::DistanceMatrix;
 use crate::io_utils::parse;
 
 /// Read a space separated lower triangular distance matrix.
 /// It can also be used to read a full distance matrix.
-pub fn read_lower_triangular_distance_matrix<T: Distance + FromStr + Display, R: BufRead>(
+pub fn read_lower_triangular_distance_matrix<T: Zero + Clone + FromStr + Display, R: BufRead>(
     r: R,
 ) -> io::Result<DistanceMatrix<T>>
 where

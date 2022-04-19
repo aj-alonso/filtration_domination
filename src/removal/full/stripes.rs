@@ -1,6 +1,7 @@
-use crate::Value;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+
+use crate::Value;
 
 /// A half-open interval.
 pub type Interval<VF> = (VF, VF);

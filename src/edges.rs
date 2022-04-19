@@ -6,23 +6,34 @@ use std::cmp::{max, Ordering};
 use std::fmt::Formatter;
 use std::hash::{Hash, Hasher};
 
+/// Common functionality of an undirected edge. See [BareEdge] and [FilteredEdge].
 pub trait Edge {
+    /// First endpoint. This is an undirected edge, but the first endpoint must be consistent
+    /// for a fixed instance.
     fn u(&self) -> usize;
 
+    /// Returns a mutable reference to the first endpoint.
     fn u_mut(&mut self) -> &mut usize;
 
+    /// Second endpoint. This is an undirected edge, but the second endpoint must be consistent
+    /// for a fixed instance.
     fn v(&self) -> usize;
 
+    /// Returns a mutable reference to the second endpoint.
     fn v_mut(&mut self) -> &mut usize;
 
+    /// The greatest endpoint.
     fn max(&self) -> usize {
         std::cmp::max(self.u(), self.v())
     }
 
+    /// The least endpoint.
     fn min(&self) -> usize {
         std::cmp::min(self.u(), self.v())
     }
 
+    /// Return a pair whose first element is the greatest endpoint,
+    /// and the second is the least endpoint.
     fn minmax(&self) -> (usize, usize) {
         (self.min(), self.max())
     }
@@ -87,7 +98,9 @@ impl std::fmt::Display for BareEdge {
 /// An edge with its associated critical grade.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FilteredEdge<G> {
+    /// The critical grade of this edge.
     pub grade: G,
+    /// The endpoints of this edge.
     pub edge: BareEdge,
 }
 
@@ -155,6 +168,7 @@ impl<G> From<FilteredEdge<G>> for BareEdge {
 /// No self-loops are allowed.
 #[derive(Debug, Clone)]
 pub struct EdgeList<E> {
+    /// Total number of vertices.
     pub n_vertices: usize,
     edges: Vec<E>,
 }

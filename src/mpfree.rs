@@ -1,8 +1,3 @@
-use crate::chain_complex::ToFreeImplicitRepresentation;
-use crate::edges::{EdgeList, FilteredEdge};
-use crate::filtration::{build_flag_filtration, Filtration};
-use crate::simplicial_complex::MapSimplicialComplex;
-use crate::{CriticalGrade, Value};
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter};
 use std::path::Path;
@@ -10,6 +5,12 @@ use std::process::{Command, ExitStatus, Stdio};
 use std::time::Duration;
 use std::{fs, io};
 use thiserror::Error;
+
+use crate::chain_complex::ToFreeImplicitRepresentation;
+use crate::edges::{EdgeList, FilteredEdge};
+use crate::filtration::{build_flag_filtration, Filtration};
+use crate::simplicial_complex::MapSimplicialComplex;
+use crate::{CriticalGrade, Value};
 
 const TMP_DIRECTORY: &str = "tmp";
 

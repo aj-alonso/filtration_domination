@@ -1,5 +1,6 @@
-use crate::points::PointCloud;
 use num::Float;
+
+use crate::points::PointCloud;
 
 /// Write the point cloud to the given writer.
 pub fn write_point_cloud<T: Float + std::fmt::Display, W: std::io::Write, const N: usize>(

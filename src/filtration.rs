@@ -1,10 +1,11 @@
+use sorted_iter::assume::AssumeSortedByItemExt;
+use sorted_iter::SortedIterator;
+use std::collections::BTreeSet;
+
 use crate::chain_complex::{ChainComplex, Column, GradedMatrix, ToFreeImplicitRepresentation};
 use crate::edges::{BareEdge, FilteredEdge};
 use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
 use crate::{CriticalGrade, OneCriticalGrade, Value};
-use sorted_iter::assume::AssumeSortedByItemExt;
-use sorted_iter::SortedIterator;
-use std::collections::BTreeSet;
 
 /// Build a flag multi-filtration from an iterator of multi-filtered edges.
 /// The iterator does not need to be sorted.

@@ -1,9 +1,10 @@
+use std::cmp::Ordering;
+use std::time::Duration;
+
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::EdgeOrder;
 use crate::CriticalGrade;
-use std::cmp::Ordering;
-use std::time::Duration;
 
 /// As [crate::removal::remove_filtration_dominated], but instead of filtration-dominated edges
 /// this function checks for strongly filtration-dominated edges.

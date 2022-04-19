@@ -1,13 +1,20 @@
-use crate::distance_matrix::DistanceMatrix;
+//! Density estimators on distance matrices.
+//! See [DensityEstimator].
 use num::Float;
 
+use crate::distance_matrix::DistanceMatrix;
+
+/// Density estimators. See [DensityEstimator::estimate].
 #[derive(Clone, Copy)]
 pub enum DensityEstimator<T: Copy> {
+    /// Ball kernel density estimator with the given bandwidth.
     Ball(T),
+    /// Gaussian kernel density estimator with the given bandwidth.
     Gaussian(T),
 }
 
 impl<T: Float> DensityEstimator<T> {
+    /// Returns a vector of the estimated densities of the points in the given distance matrix.
     pub fn estimate(&self, dists: &DistanceMatrix<T>) -> Vec<T> {
         match self {
             Self::Ball(radius) => ball_density(dists, *radius),
@@ -16,7 +23,7 @@ impl<T: Float> DensityEstimator<T> {
     }
 }
 
-pub fn ball_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
+fn ball_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
     let n = dists.len();
     let mut densities: Vec<usize> = vec![0; n];
     let mut total: usize = 0;
@@ -36,7 +43,7 @@ pub fn ball_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
         .collect()
 }
 
-pub fn gaussian_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
+fn gaussian_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
     if dists.is_empty() {
         return vec![];
     }

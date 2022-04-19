@@ -1,8 +1,9 @@
+use sorted_iter::assume::AssumeSortedByItemExt;
+use sorted_iter::SortedIterator;
+
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::{CriticalGrade, OneCriticalGrade, Value};
-use sorted_iter::assume::AssumeSortedByItemExt;
-use sorted_iter::SortedIterator;
 
 /// Given an edge list, returns a tuple that contains the number of edges that are
 /// isolated (that is, they have empty edge neighborhood) at their critical grade,

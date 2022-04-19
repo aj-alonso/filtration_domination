@@ -1,12 +1,12 @@
 //! Utilities to save distance matrices to disk.
-
 use std::fmt::Display;
 use std::io;
 use std::io::Write;
 
-use crate::distance_matrix::{Distance, DistanceMatrix};
+use crate::distance_matrix::DistanceMatrix;
 
-pub fn write_lower_triangular_distance_matrix<T: Distance + Display, W: Write>(
+/// Write a lower triangular distance matrix.
+pub fn write_lower_triangular_distance_matrix<T: Display, W: Write>(
     distance_matrix: &DistanceMatrix<T>,
     writer: &mut W,
 ) -> io::Result<()> {
@@ -26,7 +26,7 @@ pub fn write_lower_triangular_distance_matrix<T: Distance + Display, W: Write>(
 }
 
 /// Write a full distance matrix (that is, a square matrix of size equal to the number of vertices).
-pub fn write_distance_matrix<T: Distance + Display, W: Write>(
+pub fn write_distance_matrix<T: Display, W: Write>(
     distance_matrix: &DistanceMatrix<T>,
     writer: &mut W,
 ) -> io::Result<()> {

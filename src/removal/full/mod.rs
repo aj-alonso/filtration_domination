@@ -1,13 +1,14 @@
-mod regions;
-mod stripes;
+use std::collections::BTreeSet;
+use std::time::Duration;
 
 use crate::edges::{EdgeList, FilteredEdge};
 use crate::removal::adjacency::AdjacencyMatrix;
 use crate::removal::EdgeOrder;
 use crate::Value;
 use crate::{CriticalGrade, OneCriticalGrade};
-use std::collections::BTreeSet;
-use std::time::Duration;
+
+mod regions;
+mod stripes;
 
 /// Go through the given edge list, and check each edge for filtration-domination.
 /// If it is filtration-dominated we remove them.
