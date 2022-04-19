@@ -1,5 +1,5 @@
 //! Edges, edge lists, and associated functions.
-use crate::{OneCriticalGrade, Value};
+use crate::{OneCriticalGrade, Value, Vertex};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::cmp::{max, Ordering};
@@ -7,45 +7,45 @@ use std::fmt::Formatter;
 use std::hash::{Hash, Hasher};
 
 pub trait Edge {
-    fn u(&self) -> usize;
+    fn u(&self) -> Vertex;
 
-    fn u_mut(&mut self) -> &mut usize;
+    fn u_mut(&mut self) -> &mut Vertex;
 
-    fn v(&self) -> usize;
+    fn v(&self) -> Vertex;
 
-    fn v_mut(&mut self) -> &mut usize;
+    fn v_mut(&mut self) -> &mut Vertex;
 
-    fn max(&self) -> usize {
+    fn max(&self) -> Vertex {
         std::cmp::max(self.u(), self.v())
     }
 
-    fn min(&self) -> usize {
+    fn min(&self) -> Vertex {
         std::cmp::min(self.u(), self.v())
     }
 
-    fn minmax(&self) -> (usize, usize) {
+    fn minmax(&self) -> (Vertex, Vertex) {
         (self.min(), self.max())
     }
 }
 
 /// Edge that is not filtered.
 #[derive(Debug, Clone, Copy)]
-pub struct BareEdge(pub usize, pub usize);
+pub struct BareEdge(pub Vertex, pub Vertex);
 
 impl Edge for BareEdge {
-    fn u(&self) -> usize {
+    fn u(&self) -> Vertex {
         self.0
     }
 
-    fn u_mut(&mut self) -> &mut usize {
+    fn u_mut(&mut self) -> &mut Vertex {
         &mut self.0
     }
 
-    fn v(&self) -> usize {
+    fn v(&self) -> Vertex {
         self.1
     }
 
-    fn v_mut(&mut self) -> &mut usize {
+    fn v_mut(&mut self) -> &mut Vertex {
         &mut self.1
     }
 }
@@ -92,19 +92,19 @@ pub struct FilteredEdge<G> {
 }
 
 impl<G> Edge for FilteredEdge<G> {
-    fn u(&self) -> usize {
+    fn u(&self) -> Vertex {
         self.edge.u()
     }
 
-    fn u_mut(&mut self) -> &mut usize {
+    fn u_mut(&mut self) -> &mut Vertex {
         self.edge.u_mut()
     }
 
-    fn v(&self) -> usize {
+    fn v(&self) -> Vertex {
         self.edge.v()
     }
 
-    fn v_mut(&mut self) -> &mut usize {
+    fn v_mut(&mut self) -> &mut Vertex {
         self.edge.v_mut()
     }
 }
@@ -155,12 +155,12 @@ impl<G> From<FilteredEdge<G>> for BareEdge {
 /// No self-loops are allowed.
 #[derive(Debug, Clone)]
 pub struct EdgeList<E> {
-    pub n_vertices: usize,
+    pub n_vertices: Vertex,
     edges: Vec<E>,
 }
 
 impl<E: Edge> EdgeList<E> {
-    pub fn new(n_vertices: usize) -> Self {
+    pub fn new(n_vertices: Vertex) -> Self {
         Self {
             n_vertices,
             edges: Vec::new(),
@@ -188,7 +188,7 @@ impl<E: Edge> EdgeList<E> {
         edges.into()
     }
 
-    pub fn number_of_vertices(&self) -> usize {
+    pub fn number_of_vertices(&self) -> Vertex {
         self.n_vertices
     }
 
@@ -209,22 +209,22 @@ impl<E: Edge> EdgeList<E> {
     }
 
     /// Returns a count of the degree of each vertex.
-    pub fn degrees(&self) -> Vec<usize> {
-        let mut degree_count = vec![0; self.n_vertices];
+    pub fn degrees(&self) -> Vec<Vertex> {
+        let mut degree_count = vec![0; self.n_vertices as usize];
         for e in self.edge_iter() {
-            degree_count[e.u()] += 1;
-            degree_count[e.v()] += 1;
+            degree_count[e.u() as usize] += 1;
+            degree_count[e.v() as usize] += 1;
         }
         degree_count
     }
 
     /// Returns the maximum degree of a vertex in the edge list.
-    pub fn maximum_degree(&self) -> usize {
+    pub fn maximum_degree(&self) -> Vertex {
         // Return 0 as maximum degree if there are no vertices.
-        self.degrees().into_iter().max().unwrap_or(0usize)
+        self.degrees().into_iter().max().unwrap_or(0)
     }
 
-    fn count_vertices(edges: &[E]) -> usize {
+    fn count_vertices(edges: &[E]) -> Vertex {
         let mut n_vertices = 0;
 
         for e in edges.iter() {
