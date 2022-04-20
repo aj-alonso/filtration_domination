@@ -9,10 +9,10 @@ use paste::paste;
 const HOMOLOGY: usize = 1;
 
 macro_rules! test_case {
-    ($dataset:expr) => {
+    ($name:expr, $dataset:expr) => {
         paste!{
 #[test]
-fn [<$dataset:lower _remove>]() {
+fn [<$name _remove>]() {
     let mut edges = datasets::get_dataset_density_edge_list(
         Dataset::$dataset,
         Threshold::KeepAll,
@@ -25,13 +25,12 @@ fn [<$dataset:lower _remove>]() {
     let duration = start.elapsed();
     println!("Original edges: {}", edges.len());
     println!("Remaining edges: {}", remaining_edges.len());
-    println!("Time spent removing edges: {:?}", duration);
 
     let mpfree_all_edges =
-        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($dataset)), HOMOLOGY, &edges).unwrap();
+        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).unwrap();
 
     let mpfree_remaining = compute_minimal_presentation(
-        &format!("test_mpfree_{}_strong", stringify!($dataset)),
+        &format!("test_mpfree_{}_strong", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
@@ -41,7 +40,7 @@ fn [<$dataset:lower _remove>]() {
 }
 
 #[test]
-fn [<$dataset:lower _remove_strong>]() {
+fn [<$name _remove_strong>]() {
     let mut edges = datasets::get_dataset_density_edge_list(
         Dataset::$dataset,
         Threshold::KeepAll,
@@ -54,13 +53,12 @@ fn [<$dataset:lower _remove_strong>]() {
     let duration = start.elapsed();
     println!("Original edges: {}", edges.len());
     println!("Remaining edges: {}", remaining_edges.len());
-    println!("Time spent removing edges: {:?}", duration);
 
     let mpfree_all_edges =
-        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($dataset:lower)), HOMOLOGY, &edges).unwrap();
+        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).unwrap();
 
     let mpfree_remaining = compute_minimal_presentation(
-        &format!("test_mpfree_{}_strong", stringify!($dataset:lower)),
+        &format!("test_mpfree_{}_strong", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
@@ -72,6 +70,12 @@ fn [<$dataset:lower _remove_strong>]() {
     }
 }
 
-test_case!(Senate);
-test_case!(Netwsc);
-test_case!(Eleg);
+test_case!(senate, Senate);
+test_case!(netwsc, Netwsc);
+test_case!(eleg, Eleg);
+
+test_case!(uniform, Uniform { n_points: 400 });
+test_case!(sphere, Sphere { n_points: 100 });
+test_case!(circle, Circle { n_points: 100 });
+test_case!(torus, Torus { n_points: 200 });
+test_case!(swiss_roll, SwissRoll { n_points: 200 });
