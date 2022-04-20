@@ -24,7 +24,7 @@ list of edges.
 
 Run the tests with
 ```shell
-cargo test --release -- --show-output
+cargo test --release -- --test-threads 1 --show-output
 ```
 It expects that the datasets are available in the `datasets` directory.
 Use the provided script `download_datasets.sh` to download them.
