@@ -19,10 +19,8 @@ fn [<$name _remove>]() {
         None,
         true).unwrap();
 
-    let start = std::time::Instant::now();
     let remaining_edges =
         remove_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
-    let duration = start.elapsed();
     println!("Original edges: {}", edges.len());
     println!("Remaining edges: {}", remaining_edges.len());
 
@@ -47,10 +45,8 @@ fn [<$name _remove_strong>]() {
         None,
         true).unwrap();
 
-    let start = std::time::Instant::now();
     let remaining_edges =
         remove_strongly_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
-    let duration = start.elapsed();
     println!("Original edges: {}", edges.len());
     println!("Remaining edges: {}", remaining_edges.len());
 
