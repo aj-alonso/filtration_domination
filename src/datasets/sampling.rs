@@ -43,13 +43,14 @@ pub fn sample_torus(n: usize) -> PointCloud<f64, 3> {
     point_cloud
 }
 
+/// A plane rolled up into a spiral in R^3.
+/// Equations are the same as in <https://jlmelville.github.io/smallvis/swisssne.html>.
 pub fn sample_swiss_roll(n: usize) -> PointCloud<f64, 3> {
-    let r = 10.;
     let mut rng = rand::thread_rng();
     let mut point_cloud = PointCloud::new();
     for _i in 0..n {
-        let phi = (rng.gen_range(0.0..1.0) * 3. + 1.5) * PI;
-        let psi = rng.gen_range(0.0..1.0) * r;
+        let phi = rng.gen_range(1.5..4.5) * PI;
+        let psi = rng.gen_range(0.0..10.0);
 
         let x = phi * phi.cos();
         let y = phi * phi.sin();

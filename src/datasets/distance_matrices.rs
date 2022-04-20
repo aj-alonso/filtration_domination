@@ -15,6 +15,29 @@ use crate::edges::{EdgeList, FilteredEdge};
 use crate::points::PointCloud;
 use crate::{OneCriticalGrade, Value};
 
+/// Build an edge list out of a distance matrix. Each edge is graded by the distance between its
+/// vertices.
+/// If `threshold` is given, edges of grade less than `threshold` are not included.
+/// If `threshold` is not given then it is set to the enclosing radius.
+pub fn get_distance_matrix_edge_list(
+    distance_matrix: &DistanceMatrix<OrderedFloat<f64>>,
+    threshold: Threshold,
+) -> EdgeList<FilteredEdge<OneCriticalGrade<OrderedFloat<f64>, 1>>> {
+    let edges = distance_matrix.edges();
+
+    let actual_threshold: Option<OrderedFloat<f64>> = match threshold {
+        Threshold::KeepAll => None,
+        Threshold::Percentile(p) => Some(*distance_matrix.percentile(p)),
+        Threshold::Fixed(t) => Some(OrderedFloat::from(t)),
+    };
+
+    if let Some(threshold_value) = actual_threshold {
+        EdgeList::from_iterator(filter_by_threshold(edges, threshold_value))
+    } else {
+        EdgeList::from_iterator(edges)
+    }
+}
+
 /// Returns the distance matrix of the given dataset.
 pub fn get_dataset_distance_matrix(
     dataset: Dataset,
@@ -139,27 +162,4 @@ fn filter_by_threshold<
     threshold: VF,
 ) -> impl Iterator<Item = FilteredEdge<OneCriticalGrade<VF, N>>> + 'a {
     edge_iter.filter(move |&FilteredEdge { grade, edge: _ }| grade.0[N - 1] < threshold)
-}
-
-/// Build an edge list out of a distance matrix. Each edge is graded by the distance between its
-/// vertices.
-/// If `threshold` is given, edges of grade less than `threshold` are not included.
-/// If `threshold` is not given then it is set to the enclosing radius.
-pub fn get_distance_matrix_edge_list(
-    distance_matrix: &DistanceMatrix<OrderedFloat<f64>>,
-    threshold: Threshold,
-) -> EdgeList<FilteredEdge<OneCriticalGrade<OrderedFloat<f64>, 1>>> {
-    let edges = distance_matrix.edges();
-
-    let actual_threshold: Option<OrderedFloat<f64>> = match threshold {
-        Threshold::KeepAll => None,
-        Threshold::Percentile(p) => Some(*distance_matrix.percentile(p)),
-        Threshold::Fixed(t) => Some(OrderedFloat::from(t)),
-    };
-
-    if let Some(threshold_value) = actual_threshold {
-        EdgeList::from_iterator(filter_by_threshold(edges, threshold_value))
-    } else {
-        EdgeList::from_iterator(edges)
-    }
 }

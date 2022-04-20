@@ -108,7 +108,7 @@ pub fn get_dataset_density_edge_list(
     let estimator = estimator.unwrap_or_else(|| default_estimator(&distance_matrix));
     let mut estimations = estimator.estimate(&distance_matrix);
     // Instead of working with densities, we work with codensities. That is, smaller values correspond
-    // to more dense vertices.
+    // to higher density estimations.
     for e in estimations.iter_mut() {
         *e = OrderedFloat::from(1.0) - *e;
     }
