@@ -1,7 +1,7 @@
+use rustc_hash::FxHashMap;
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 
 pub type Vertex = usize;
 pub type Dimension = usize;
@@ -60,7 +60,7 @@ pub struct MapSimplicialComplex {
     simplices_by_dim: Vec<Vec<SimplexKey>>,
 
     /// Associates a simplex key to its index in the vector of its dimension in simplices_by_dim.
-    key_to_idx: Vec<HashMap<SimplexKey, usize>>,
+    key_to_idx: Vec<FxHashMap<SimplexKey, usize>>,
 
     /// Maximum number of vertices.
     max_n: Vertex,

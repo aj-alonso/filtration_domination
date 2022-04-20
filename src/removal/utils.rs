@@ -9,6 +9,7 @@ use crate::{CriticalGrade, OneCriticalGrade, Value};
 /// Given an edge list, returns a tuple that contains the number of edges that are
 /// isolated (that is, they have empty edge neighborhood) at their critical grade,
 /// and the number of edge dominated at their critical grade.
+#[must_use]
 pub fn count_isolated_edges<VF: Value>(
     edge_list: &EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
 ) -> (usize, usize) {

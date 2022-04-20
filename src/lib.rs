@@ -5,6 +5,7 @@
 #![warn(clippy::shadow_unrelated)]
 #![warn(clippy::needless_pass_by_value)]
 #![allow(clippy::needless_range_loop)]
+#![warn(clippy::disallowed_types)]
 
 use num::{Bounded, Zero};
 use std::cmp::Ordering;

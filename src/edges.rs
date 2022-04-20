@@ -309,6 +309,16 @@ mod tests {
     }
 
     #[test]
+    fn edge_list_reverse_lexicographic_order() {
+        let mut edges: EdgeList<_> = sorting_test_dataset();
+        edges.sort_reverse_lexicographically();
+        let grades: Vec<OneCriticalGrade<usize, 2>> = edges.edge_iter().map(|e| e.grade).collect();
+        let expected_grades: Vec<OneCriticalGrade<usize, 2>> =
+            vec![[2, 2].into(), [2, 1].into(), [1, 2].into(), [1, 1].into()];
+        assert_eq!(grades, expected_grades);
+    }
+
+    #[test]
     fn edge_list_colexicographic_order() {
         let mut edges: EdgeList<_> = sorting_test_dataset();
         edges.sort_colexicographically();

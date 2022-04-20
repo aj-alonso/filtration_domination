@@ -6,6 +6,11 @@ use std::io::Write;
 use crate::distance_matrix::DistanceMatrix;
 
 /// Write a lower triangular distance matrix.
+///
+/// Example output:
+/// ```
+/// "0\n0.1 0\n0.2 0.3 0";
+/// ```
 pub fn write_lower_triangular_distance_matrix<T: Display, W: Write>(
     distance_matrix: &DistanceMatrix<T>,
     writer: &mut W,
