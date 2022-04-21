@@ -10,7 +10,8 @@ paper
 The code also includes utilities to handle bifiltered graphs, compute its clique
 complexes, and run mpfree. See the documentation below.
 
-This is a Rust project. It has been tested with Rust 1.60.
+This is a Rust project. It has been tested with Rust 1.60. Below, we use
+`cargo`, which is the Rust package manager.
 
 ## Usage
 
