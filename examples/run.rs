@@ -128,10 +128,6 @@ fn main() -> anyhow::Result<()> {
 
     println!("Original edges: {}", edges.len());
     println!("Remaining edges: {}", remaining_edges.len());
-    println!(
-        "Ratio: {:.2}",
-        (remaining_edges.len() as f64) / (edges.len() as f64)
-    );
     println!("Removal took {duration:?}");
 
     if opts.mpfree {
@@ -152,7 +148,12 @@ fn main() -> anyhow::Result<()> {
             assert_eq!(mpfree_remaining.output, mpfree_no_collapse.output);
         }
 
-        println!("Minimal presentation sizes: {:?}", mpfree_remaining.output);
+        println!(
+            "Minimal presentation sizes: {:?}",
+            mpfree_remaining.output.sizes
+        );
+    } else {
+        println!("\nNot running mpfree. Run with --mpfree to do so.");
     }
 
     Ok(())
