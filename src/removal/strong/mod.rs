@@ -30,7 +30,7 @@ pub fn remove_strongly_filtration_dominated_timed<G: CriticalGrade>(
         EdgeOrder::Maintain => {}
     }
 
-    let mut critical_edges: Vec<FilteredEdge<G>> = Vec::with_capacity(edge_list.len());
+    let mut remaining_edges: Vec<FilteredEdge<G>> = Vec::with_capacity(edge_list.len());
     let mut adjacency_matrix = AdjacencyMatrix::new(edge_list.n_vertices);
 
     for edge in edge_list.edge_iter() {
@@ -48,12 +48,12 @@ pub fn remove_strongly_filtration_dominated_timed<G: CriticalGrade>(
         if is_strongly_filtration_dominated(&adjacency_matrix, edge) {
             adjacency_matrix.delete_edge(edge);
         } else {
-            critical_edges.push(edge.clone());
+            remaining_edges.push(edge.clone());
         }
     }
 
-    critical_edges.shrink_to_fit();
-    critical_edges.into()
+    remaining_edges.shrink_to_fit();
+    remaining_edges.into()
 }
 
 fn is_strongly_filtration_dominated<G: CriticalGrade>(

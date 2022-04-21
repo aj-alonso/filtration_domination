@@ -36,7 +36,7 @@ pub fn remove_filtration_dominated_timed<VF: Value>(
         EdgeOrder::Maintain => {}
     }
 
-    let mut critical_edges: Vec<FilteredEdge<OneCriticalGrade<VF, 2>>> =
+    let mut remaining_edges: Vec<FilteredEdge<OneCriticalGrade<VF, 2>>> =
         Vec::with_capacity(edge_list.len());
     let mut adjacency_matrix = AdjacencyMatrix::new(edge_list.n_vertices);
 
@@ -54,12 +54,12 @@ pub fn remove_filtration_dominated_timed<VF: Value>(
         if is_filtration_dominated(&adjacency_matrix, edge) {
             adjacency_matrix.delete_edge(edge);
         } else {
-            critical_edges.push(*edge);
+            remaining_edges.push(*edge);
         }
     }
 
-    critical_edges.shrink_to_fit();
-    critical_edges.into()
+    remaining_edges.shrink_to_fit();
+    remaining_edges.into()
 }
 
 fn is_filtration_dominated<VF: Value>(
