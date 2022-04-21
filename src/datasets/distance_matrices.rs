@@ -1,13 +1,13 @@
 use num::Float;
 use ordered_float::OrderedFloat;
+use std::fs;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
-use std::{fs, io};
 
 use crate::datasets::sampling::{
     sample_noisy_sphere, sample_random_points, sample_swiss_roll, sample_torus,
 };
-use crate::datasets::{Dataset, Threshold, DATASET_DIRECTORY};
+use crate::datasets::{Dataset, DatasetError, Threshold, DATASET_DIRECTORY};
 use crate::distance_matrix::input::read_lower_triangular_distance_matrix;
 use crate::distance_matrix::output::write_lower_triangular_distance_matrix;
 use crate::distance_matrix::DistanceMatrix;
@@ -42,7 +42,7 @@ pub fn get_distance_matrix_edge_list(
 pub fn get_dataset_distance_matrix(
     dataset: Dataset,
     use_cache: bool,
-) -> io::Result<DistanceMatrix<OrderedFloat<f64>>> {
+) -> Result<DistanceMatrix<OrderedFloat<f64>>, DatasetError> {
     let dataset_directory: &Path = Path::new(DATASET_DIRECTORY);
     match dataset {
         Dataset::Senate => read_distance_matrix_from_file(
@@ -113,7 +113,13 @@ pub fn get_dataset_distance_matrix(
 
 fn read_distance_matrix_from_file<P: AsRef<Path>>(
     filepath: P,
-) -> io::Result<DistanceMatrix<OrderedFloat<f64>>> {
+) -> Result<DistanceMatrix<OrderedFloat<f64>>, DatasetError> {
+    if !filepath.as_ref().is_file() {
+        return Err(DatasetError::FileNotFound(format!(
+            "{}",
+            filepath.as_ref().display()
+        )));
+    }
     let file = fs::File::open(filepath)?;
     let reader = BufReader::new(&file);
     let distance_matrix = read_lower_triangular_distance_matrix(reader)?;
@@ -136,7 +142,7 @@ fn read_or_save_distance_matrix<
     dst_filename: P,
     distance_matrix_builder: F,
     use_cache: bool,
-) -> io::Result<DistanceMatrix<OrderedFloat<f64>>> {
+) -> Result<DistanceMatrix<OrderedFloat<f64>>, DatasetError> {
     if dst_filename.as_ref().is_file() && use_cache {
         read_distance_matrix_from_file(dst_filename)
     } else {

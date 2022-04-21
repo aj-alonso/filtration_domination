@@ -5,6 +5,7 @@ use ordered_float::OrderedFloat;
 use std::cmp::max;
 use std::fmt::Formatter;
 use std::io;
+use thiserror::Error;
 
 use crate::datasets::distance_matrices::get_dataset_distance_matrix;
 use crate::distance_matrix::density_estimation::DensityEstimator;
@@ -90,6 +91,16 @@ pub enum Threshold {
     Fixed(f64),
 }
 
+/// Error when reading or creating a dataset.
+#[derive(Error, Debug)]
+pub enum DatasetError {
+    #[error("Couldn't find file \"{0}\". Did you download the datasets?")]
+    FileNotFound(String),
+
+    #[error(transparent)]
+    Io(#[from] io::Error),
+}
+
 /// Return the edge list of the associated dataset. Each edge is bifiltered by codensity and length.
 /// Codensity means that we order the density parameter from densest to least dense.
 ///
@@ -102,7 +113,7 @@ pub fn get_dataset_density_edge_list(
     threshold: Threshold,
     estimator: Option<DensityEstimator<OrderedFloat<f64>>>,
     use_cache: bool,
-) -> io::Result<EdgeList<FilteredEdge<OneCriticalGrade<OrderedFloat<f64>, 2>>>> {
+) -> Result<EdgeList<FilteredEdge<OneCriticalGrade<OrderedFloat<f64>, 2>>>, DatasetError> {
     let distance_matrix = get_dataset_distance_matrix(dataset, use_cache)?;
 
     let estimator = estimator.unwrap_or_else(|| default_estimator(&distance_matrix));
