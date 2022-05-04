@@ -28,7 +28,7 @@ fn [<$name _remove>]() {
         compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).unwrap();
 
     let mpfree_remaining = compute_minimal_presentation(
-        &format!("test_mpfree_{}_strong", stringify!($name)),
+        &format!("test_mpfree_{}_remaining", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
@@ -51,10 +51,10 @@ fn [<$name _remove_strong>]() {
     println!("Remaining edges: {}", remaining_edges.len());
 
     let mpfree_all_edges =
-        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).unwrap();
+        compute_minimal_presentation(&format!("test_mpfree_{}_strong", stringify!($name)), HOMOLOGY, &edges).unwrap();
 
     let mpfree_remaining = compute_minimal_presentation(
-        &format!("test_mpfree_{}_strong", stringify!($name)),
+        &format!("test_mpfree_{}_strong_remaining", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
