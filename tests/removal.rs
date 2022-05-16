@@ -8,6 +8,9 @@ use paste::paste;
 
 const HOMOLOGY: usize = 1;
 
+/// Create test cases that remove edges from the bifiltered graph, and check that
+/// the multiparameter persistent homology is preserved
+/// (by checking minimal presentations with mpfree).
 macro_rules! test_case {
     ($name:expr, $dataset:expr) => {
         paste!{

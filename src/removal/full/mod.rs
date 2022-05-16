@@ -66,6 +66,7 @@ fn is_filtration_dominated<VF: Value>(
     adjacency_matrix: &AdjacencyMatrix<OneCriticalGrade<VF, 2>>,
     edge: &FilteredEdge<OneCriticalGrade<VF, 2>>,
 ) -> bool {
+    // Compute regions of non-domination for every vertex in the edge neighbourhood.
     let mut non_domination_regions = Vec::new();
     for (v, value_v) in adjacency_matrix.common_neighbours(edge) {
         let non_domination_region =
@@ -77,6 +78,7 @@ fn is_filtration_dominated<VF: Value>(
         non_domination_regions.push(non_domination_region);
     }
 
+    // Compute all critical grades, where we need to check for domination.
     let mut first_domination_times: BTreeSet<OneCriticalGrade<VF, 2>> =
         BTreeSet::from_iter([edge.grade]);
 
@@ -90,10 +92,10 @@ fn is_filtration_dominated<VF: Value>(
         }
     }
 
-    for critical_value in domination_times {
+    for grade in domination_times {
         let mut dominated = false;
         for region in non_domination_regions.iter() {
-            if !region.contains_point(critical_value) {
+            if !region.contains_point(grade) {
                 dominated = true;
                 break;
             }

@@ -41,7 +41,7 @@ pub fn remove_strongly_filtration_dominated_timed<G: CriticalGrade>(
     for edge in edge_list.edge_iter() {
         if let Some(max_time) = max_time {
             if start.elapsed() > max_time {
-                break;
+                return edge_list.clone();
             }
         }
 

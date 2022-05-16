@@ -43,6 +43,7 @@ fn ball_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
         .collect()
 }
 
+/// Simple (slow) algorithm to estimate the density via the Gaussian kernel.
 fn gaussian_density<T: Float>(dists: &DistanceMatrix<T>, radius: T) -> Vec<T> {
     if dists.is_empty() {
         return vec![];

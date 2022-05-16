@@ -200,3 +200,77 @@ where
         ChainComplex::new(vec![high_matrix, mid_matrix, low_matrix])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::edges::{BareEdge, FilteredEdge};
+    use crate::filtration::{build_flag_filtration, Filtration};
+    use crate::simplicial_complex::{MapSimplicialComplex, SimplicialComplex};
+    use crate::OneCriticalGrade;
+
+    #[test]
+    fn flag_filtration_triangle() {
+        let edges = vec![
+            FilteredEdge {
+                edge: BareEdge(0, 1),
+                grade: OneCriticalGrade([0, 1]),
+            },
+            FilteredEdge {
+                edge: BareEdge(0, 2),
+                grade: OneCriticalGrade([1, 2]),
+            },
+            FilteredEdge {
+                edge: BareEdge(1, 2),
+                grade: OneCriticalGrade([2, 3]),
+            },
+        ];
+        let f: Filtration<_, MapSimplicialComplex> = build_flag_filtration(3, 2, edges.into_iter());
+        assert_eq!(&OneCriticalGrade([2, 3]), f.value_of(2, 0));
+        let vertices: Vec<_> = f.simplicial_complex().simplex_vertices(2, 0).collect();
+        assert_eq!(vec![0, 1, 2], vertices);
+    }
+
+    #[test]
+    fn flag_filtration_two_tetrahedra() {
+        fn add_complete_3_graph(
+            v: &mut Vec<FilteredEdge<OneCriticalGrade<usize, 2>>>,
+            a: usize,
+            b: usize,
+            c: usize,
+        ) {
+            v.push(FilteredEdge {
+                edge: BareEdge(a, b),
+                grade: OneCriticalGrade([0, 0]),
+            });
+            v.push(FilteredEdge {
+                edge: BareEdge(a, c),
+                grade: OneCriticalGrade([0, 0]),
+            });
+            v.push(FilteredEdge {
+                edge: BareEdge(b, c),
+                grade: OneCriticalGrade([0, 0]),
+            });
+        }
+        let mut edges = Vec::new();
+        // Tetrahedra on 0, 1, 2, 3.
+        add_complete_3_graph(&mut edges, 0, 1, 2);
+        add_complete_3_graph(&mut edges, 0, 1, 3);
+        add_complete_3_graph(&mut edges, 0, 2, 3);
+        add_complete_3_graph(&mut edges, 1, 2, 3);
+
+        // Tetrahedra on 3, 4, 5, 6.
+        add_complete_3_graph(&mut edges, 3, 4, 5);
+        add_complete_3_graph(&mut edges, 3, 4, 6);
+        add_complete_3_graph(&mut edges, 3, 5, 6);
+        add_complete_3_graph(&mut edges, 4, 5, 6);
+
+        let f: Filtration<_, MapSimplicialComplex> = build_flag_filtration(7, 3, edges.into_iter());
+        assert_eq!(&OneCriticalGrade([0, 0]), f.value_of(3, 0));
+
+        let vertices: Vec<_> = f.simplicial_complex().simplex_vertices(3, 0).collect();
+        assert_eq!(vec![0, 1, 2, 3], vertices);
+
+        let vertices: Vec<_> = f.simplicial_complex().simplex_vertices(3, 1).collect();
+        assert_eq!(vec![3, 4, 5, 6], vertices);
+    }
+}

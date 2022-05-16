@@ -111,7 +111,7 @@ impl<VF: Value, const N: usize> ChainComplex<VF, N> {
 }
 
 impl<VF: Value, const N: usize> ChainComplex<VF, N> {
-    pub fn write_scc2020<W: std::io::Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn write_scc2020<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         writeln!(w, "scc2020")?;
         writeln!(w, "{}", N)?;
 
