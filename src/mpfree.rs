@@ -140,17 +140,14 @@ fn run_mpfree<P: AsRef<Path>>(
     let parameters: usize = buffer.trim().parse()?;
     buffer.clear();
     child_stdout.read_line(&mut buffer)?;
-    let mut betti_raw = buffer.trim().split_whitespace();
-    let mut betti: [usize; 3] = [0, 0, 0];
-    for b in betti.iter_mut() {
-        *b = betti_raw
+    let mut sizes_raw = buffer.trim().split_whitespace();
+    let mut sizes: [usize; 3] = [0, 0, 0];
+    for s in sizes.iter_mut() {
+        *s = sizes_raw
             .next()
             .ok_or(MpfreeError::ParsingBettiNumbers)?
             .parse()?;
     }
 
-    Ok(ParsedMpfreeOutput {
-        parameters,
-        sizes: betti,
-    })
+    Ok(ParsedMpfreeOutput { parameters, sizes })
 }
