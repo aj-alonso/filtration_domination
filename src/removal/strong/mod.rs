@@ -93,3 +93,134 @@ where
     }
     true
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::edges::{BareEdge, FilteredEdge};
+    use crate::removal::adjacency::AdjacencyMatrix;
+    use crate::removal::strong::{is_strongly_filtration_dominated, is_subset};
+    use crate::OneCriticalGrade;
+
+    #[test]
+    fn strongly_filtration_dominated_happy_case() {
+        let mut adj: AdjacencyMatrix<OneCriticalGrade<usize, 2>> = AdjacencyMatrix::new(6);
+        let query_edge = FilteredEdge {
+            edge: BareEdge(0, 1),
+            grade: OneCriticalGrade([2, 2]),
+        };
+        adj.add_edge(query_edge);
+
+        // Add 2 to the edge neighborhood at grade [2, 2].
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 2),
+            grade: OneCriticalGrade([1, 2]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 2),
+            grade: OneCriticalGrade([2, 1]),
+        });
+
+        // Add 3 to the edge neighborhood at grade [4, 4].
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 3),
+            grade: OneCriticalGrade([4, 3]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 3),
+            grade: OneCriticalGrade([3, 4]),
+        });
+
+        // Connect 2 to 3 when 3 appears.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(3, 2),
+            grade: OneCriticalGrade([4, 4]),
+        });
+
+        assert!(is_strongly_filtration_dominated(&adj, &query_edge));
+    }
+
+    #[test]
+    fn not_strongly_filtration_dominated() {
+        let mut adj: AdjacencyMatrix<OneCriticalGrade<usize, 2>> = AdjacencyMatrix::new(6);
+        let query_edge = FilteredEdge {
+            edge: BareEdge(0, 1),
+            grade: OneCriticalGrade([2, 2]),
+        };
+        adj.add_edge(query_edge);
+
+        // Add 2 to the edge neighborhood at grade [2, 2].
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 2),
+            grade: OneCriticalGrade([1, 2]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 2),
+            grade: OneCriticalGrade([2, 1]),
+        });
+
+        // Add 3 to the edge neighborhood at grade [4, 4].
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 3),
+            grade: OneCriticalGrade([4, 3]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 3),
+            grade: OneCriticalGrade([3, 4]),
+        });
+
+        // Connect 2 to 3 after 3 appears.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(3, 2),
+            grade: OneCriticalGrade([5, 5]),
+        });
+
+        assert!(!is_strongly_filtration_dominated(&adj, &query_edge));
+    }
+
+    #[test]
+    fn is_subset_happy_case() {
+        let a = vec![
+            (0, OneCriticalGrade([2, 1])),
+            (10, OneCriticalGrade([2, 3])),
+            (20, OneCriticalGrade([4, 5])),
+            (30, OneCriticalGrade([3, 4])),
+        ];
+
+        let b = vec![
+            (0, OneCriticalGrade([2, 1])),
+            (1, OneCriticalGrade([2, 1])),
+            (2, OneCriticalGrade([2, 1])),
+            (10, OneCriticalGrade([1, 1])),
+            (15, OneCriticalGrade([2, 3])),
+            (16, OneCriticalGrade([2, 3])),
+            (20, OneCriticalGrade([3, 5])),
+            (24, OneCriticalGrade([4, 5])),
+            (30, OneCriticalGrade([3, 2])),
+        ];
+
+        assert!(is_subset(a.into_iter(), b.into_iter()));
+    }
+
+    #[test]
+    fn is_not_subset() {
+        let a = vec![
+            (0, OneCriticalGrade([2, 1])),
+            (30, OneCriticalGrade([3, 4])),
+        ];
+
+        let b = vec![
+            (0, OneCriticalGrade([2, 1])),
+            (1, OneCriticalGrade([2, 1])),
+            (2, OneCriticalGrade([2, 1])),
+            (10, OneCriticalGrade([1, 1])),
+            (15, OneCriticalGrade([2, 3])),
+            (16, OneCriticalGrade([2, 3])),
+            (20, OneCriticalGrade([3, 5])),
+            (24, OneCriticalGrade([4, 5])),
+            // The value of 30 is to high.
+            (30, OneCriticalGrade([3, 5])),
+        ];
+
+        assert!(!is_subset(a.into_iter(), b.into_iter()));
+    }
+}

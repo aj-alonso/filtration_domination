@@ -75,6 +75,7 @@ impl<VF: Value> ActiveValues<VF> {
     }
 }
 
+#[derive(Debug)]
 pub struct Stripes<VF> {
     arranged_stripes: Vec<(VF, VF)>,
 }

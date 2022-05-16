@@ -88,3 +88,154 @@ impl<G: CriticalGrade> AdjacencyMatrix<G> {
             .union(std::iter::once((edge_v, edge.grade.clone())))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::edges::{BareEdge, FilteredEdge};
+    use crate::removal::adjacency::AdjacencyMatrix;
+    use crate::OneCriticalGrade;
+
+    #[test]
+    fn closed_edge_neighbours_happy_case() {
+        let mut adj: AdjacencyMatrix<OneCriticalGrade<usize, 2>> = AdjacencyMatrix::new(3);
+        let query_edge = FilteredEdge {
+            edge: BareEdge(0, 1),
+            grade: OneCriticalGrade([2, 2]),
+        };
+        adj.add_edge(query_edge);
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 2),
+            grade: OneCriticalGrade([1, 2]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 2),
+            grade: OneCriticalGrade([2, 3]),
+        });
+        let neighs: Vec<_> = adj.closed_neighbours_edge(&query_edge).collect();
+        assert_eq!(
+            neighs,
+            vec![
+                (0, OneCriticalGrade([2, 2])),
+                (1, OneCriticalGrade([2, 2])),
+                (2, OneCriticalGrade([2, 3]))
+            ]
+        );
+    }
+
+    #[test]
+    fn closed_edge_neighbours_many() {
+        let mut adj: AdjacencyMatrix<OneCriticalGrade<usize, 2>> = AdjacencyMatrix::new(6);
+        let query_edge = FilteredEdge {
+            edge: BareEdge(0, 1),
+            grade: OneCriticalGrade([2, 2]),
+        };
+        adj.add_edge(query_edge);
+
+        // Add vertex 2 as an edge neighbour.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 2),
+            grade: OneCriticalGrade([1, 2]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 2),
+            grade: OneCriticalGrade([2, 3]),
+        });
+
+        // Add vertex 3 as an edge neighbour.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 3),
+            grade: OneCriticalGrade([4, 5]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 3),
+            grade: OneCriticalGrade([5, 4]),
+        });
+
+        // Add vertex 4 as an edge neighbour.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 4),
+            grade: OneCriticalGrade([1, 1]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 4),
+            grade: OneCriticalGrade([0, 0]),
+        });
+
+        // Vertex 5 is NOT an edge neighbour.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 5),
+            grade: OneCriticalGrade([0, 0]),
+        });
+
+        let neighs: Vec<_> = adj.closed_neighbours_edge(&query_edge).collect();
+        assert_eq!(
+            neighs,
+            vec![
+                (0, OneCriticalGrade([2, 2])),
+                (1, OneCriticalGrade([2, 2])),
+                (2, OneCriticalGrade([2, 3])),
+                (3, OneCriticalGrade([5, 5])),
+                (4, OneCriticalGrade([2, 2])),
+            ]
+        );
+    }
+
+    #[test]
+    fn closed_neighbours_many() {
+        let mut adj: AdjacencyMatrix<OneCriticalGrade<usize, 2>> = AdjacencyMatrix::new(6);
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 1),
+            grade: OneCriticalGrade([2, 2]),
+        });
+
+        // Connect vertex 2 to 0 and 1.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 2),
+            grade: OneCriticalGrade([1, 2]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 2),
+            grade: OneCriticalGrade([2, 3]),
+        });
+
+        // Connect vertex 3 to 0 and 1.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 3),
+            grade: OneCriticalGrade([4, 5]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 3),
+            grade: OneCriticalGrade([5, 4]),
+        });
+
+        // Connect vertex 4 to 0 and 1.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 4),
+            grade: OneCriticalGrade([1, 1]),
+        });
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(1, 4),
+            grade: OneCriticalGrade([0, 0]),
+        });
+
+        // Connect vertex 5 only to 0.
+        adj.add_edge(FilteredEdge {
+            edge: BareEdge(0, 5),
+            grade: OneCriticalGrade([0, 0]),
+        });
+
+        let neighs: Vec<_> = adj
+            .closed_neighbours(1, OneCriticalGrade([10, 10]))
+            .collect();
+        assert_eq!(
+            neighs,
+            vec![
+                (0, OneCriticalGrade([2, 2])),
+                (1, OneCriticalGrade([10, 10])),
+                (2, OneCriticalGrade([2, 3])),
+                (3, OneCriticalGrade([5, 4])),
+                (4, OneCriticalGrade([0, 0])),
+            ]
+        );
+    }
+}
