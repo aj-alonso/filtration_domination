@@ -68,7 +68,10 @@ With all the requirements in place, you can run the experiments with
 ./run_experiments.sh
 ```
 
-After that, process the `.csv` files with R:
+There is a configurable timeout and memory consumption limit, read
+`run_experiments.sh` for details.
+
+After that, you can process the `.csv` files to generate the tables and graphics:
 
 ``` shell
 Rscript process_charts.r

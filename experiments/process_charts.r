@@ -171,8 +171,8 @@ do_mpfree <- function() {
   table.envir = "table*", position = "!h") %>%
     kable_styling(latex_options = c("striped", "hold_position")) %>%
     add_header_above(c(" " = 1,
-                        "No preprocessing" = 3,
-                       "With our preprocessing" = 5)) %>%
+                       "No preprocessing" = 3,
+                       "With preprocessing" = 4)) %>%
     cat(., file = "charts/compare_mpfree.tex")
 }
 

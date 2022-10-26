@@ -2,12 +2,13 @@
 cd "$(dirname "$0")" || exit
 
 EXPERIMENT_BIN=experiment_runner
-MEMORY_LIMIT_GB=64
+
+MEMORY_LIMIT_GB=10 # In the paper the limit is 64 GB.
 
 DATASETS="senate eleg netwsc hiv dragon sphere uniform circle torus swiss-roll"
 ASYMPTOTICS_DATASETS="torus uniform"
 ORDERS="reverse-lexicographic reverse-colexicographic forward-colexicographic forward-lexicographic random"
-ORDER_TIMEOUT=$((2 * 60 * 60))
+ORDER_TIMEOUT=$((5 * 60)) # In the paper the timeout is 2 hours.
 
 # Experiment with different orders
 $EXPERIMENT_BIN order -t $ORDER_TIMEOUT $DATASETS $(printf ' -o %s' $ORDERS)
