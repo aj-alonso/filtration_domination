@@ -10,6 +10,8 @@ use filtration_domination::datasets;
 
 use clap::Parser;
 
+use crate::experiments::asymptotics::{compare_asymptotics, AsymptoticCli};
+use crate::experiments::mpfree::{compare_mpfree, MpfreeCli};
 use crate::experiments::removals::{compare_removals, RemovalCli};
 use std::fmt::Formatter;
 use std::fs::File;
@@ -29,6 +31,8 @@ const TIMEOUT_DURATION: Duration = Duration::from_secs(TIMEOUT_SECONDS);
 enum ExperimentCli {
     Order(OrderCli),
     Removal(RemovalCli),
+    Mpfree(MpfreeCli),
+    Asymptotics(AsymptoticCli),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -59,6 +63,21 @@ const ALL_DATASETS: [CliDataset; 10] = [
 ];
 
 impl CliDataset {
+    fn default_n_points(self) -> Option<usize> {
+        match self {
+            CliDataset::Senate => None,
+            CliDataset::Eleg => None,
+            CliDataset::Netwsc => None,
+            CliDataset::Hiv => None,
+            CliDataset::Dragon => None,
+            CliDataset::Uniform => Some(400),
+            CliDataset::Sphere => Some(100),
+            CliDataset::Circle => Some(100),
+            CliDataset::Torus => Some(200),
+            CliDataset::SwissRoll => Some(200),
+        }
+    }
+
     fn to_internal_dataset(self, n_points: Option<usize>) -> datasets::Dataset {
         match self {
             CliDataset::Senate => datasets::Dataset::Senate,
@@ -145,6 +164,12 @@ fn main() -> anyhow::Result<()> {
         }
         ExperimentCli::Removal(opts) => {
             compare_removals(opts)?;
+        }
+        ExperimentCli::Mpfree(opts) => {
+            compare_mpfree(opts)?;
+        }
+        ExperimentCli::Asymptotics(opts) => {
+            compare_asymptotics(opts)?;
         }
     }
 

@@ -9,7 +9,7 @@ use thiserror::Error;
 
 use crate::chain_complex::ToFreeImplicitRepresentation;
 use crate::edges::{EdgeList, FilteredEdge};
-use crate::filtration::{build_flag_filtration, Filtration};
+use crate::filtration::{build_flag_filtration_with_check, Filtration};
 use crate::simplicial_complex::MapSimplicialComplex;
 use crate::{CriticalGrade, Value};
 
@@ -25,9 +25,9 @@ pub struct MinimalPresentationComputationSummary {
 /// Timers related to minimal presentation computation.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct MinimalPresentationComputationTime {
-    build_filtration: Duration,
-    write_bifiltration: Duration,
-    mpfree: Duration,
+    pub build_filtration: Duration,
+    pub write_bifiltration: Duration,
+    pub mpfree: Duration,
 }
 
 /// Summaries of the minimal presentation computed by mpfree.
@@ -49,21 +49,59 @@ pub fn compute_minimal_presentation<VF: Value, G: CriticalGrade>(
 where
     Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
 {
+    let result = compute_minimal_presentation_with_check::<_, _, std::io::Error>(
+        name, homology, edge_list, None,
+    );
+    match result {
+        Ok(summary) => Ok(summary),
+        Err(err) => match err {
+            CheckedMpfreeError::CheckFailed(_) => {
+                panic!("Programming error: we didn't specify a check.")
+            }
+            CheckedMpfreeError::Mpfree(err) => Err(err),
+        },
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum CheckedMpfreeError<E> {
+    #[error(transparent)]
+    CheckFailed(E),
+
+    #[error(transparent)]
+    Mpfree(#[from] MpfreeError),
+}
+
+/// Compute a minimal presentation of the homology at the given dimension of the clique bifiltration
+/// of the given bifiltered edge list.
+///
+/// The `name` parameter is used to name and identify temporary files.
+pub fn compute_minimal_presentation_with_check<VF: Value, G: CriticalGrade, E: std::error::Error>(
+    name: &str,
+    homology: usize,
+    edge_list: &EdgeList<FilteredEdge<G>>,
+    memory_check_fn: Option<fn(usize) -> Result<(), E>>,
+) -> Result<MinimalPresentationComputationSummary, CheckedMpfreeError<E>>
+where
+    Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
+{
     let mut timers = MinimalPresentationComputationTime::default();
 
     // Build filtration.
     let start_filtration = std::time::Instant::now();
-    let filtration: Filtration<_, MapSimplicialComplex> = build_flag_filtration(
+    let filtration: Filtration<_, MapSimplicialComplex> = build_flag_filtration_with_check(
         edge_list.n_vertices,
         homology + 1,
         edge_list.edge_iter().cloned(),
-    );
+        memory_check_fn,
+    )
+    .map_err(CheckedMpfreeError::CheckFailed)?;
     timers.build_filtration = start_filtration.elapsed();
 
     // Save filtration to disk.
     let start_io = std::time::Instant::now();
     let directory = Path::new(TMP_DIRECTORY);
-    fs::create_dir_all(&directory)?;
+    fs::create_dir_all(&directory).map_err(MpfreeError::Io)?;
     let filepath_mpfree_input = directory.join(format!("{}_scc2020", name));
     let filepath_out = filepath_mpfree_input.with_extension("out");
     write_bifiltration(&filepath_mpfree_input, homology, &filtration).unwrap();
@@ -112,7 +150,7 @@ pub enum MpfreeError {
     WrongNumberFormat(#[from] std::num::ParseIntError),
 }
 
-fn run_mpfree<P: AsRef<Path>>(
+pub fn run_mpfree<P: AsRef<Path>>(
     filepath_in: P,
     filepath_out: P,
 ) -> Result<ParsedMpfreeOutput, MpfreeError> {

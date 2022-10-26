@@ -1,20 +1,24 @@
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::BTreeSet;
+use std::error::Error;
 
 use crate::chain_complex::{ChainComplex, Column, GradedMatrix, ToFreeImplicitRepresentation};
 use crate::edges::{BareEdge, FilteredEdge};
 use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
 use crate::{CriticalGrade, OneCriticalGrade, Value};
 
-/// Build a flag multi-filtration from an iterator of multi-filtered edges.
-/// The iterator does not need to be sorted.
-/// The resulting multi-filtration is 1-critical.
-pub fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>>>(
+pub fn build_flag_filtration_with_check<
+    G: CriticalGrade,
+    S,
+    E: Error,
+    I: Iterator<Item = FilteredEdge<G>>,
+>(
     vertices: usize,
     max_dim: usize,
     edges: I,
-) -> Filtration<G, S>
+    check: Option<fn(usize) -> Result<(), E>>,
+) -> Result<Filtration<G, S>, E>
 where
     S: for<'a> SimplicialComplex<'a>,
 {
@@ -30,7 +34,10 @@ where
     let mut neighbours: Vec<BTreeSet<usize>> = vec![BTreeSet::new(); vertices];
 
     let mut simplex_buffer = BTreeSet::new();
-    for filtered_edge in edges {
+    for (iteration, filtered_edge) in edges.enumerate() {
+        if let Some(check_fn) = check {
+            check_fn(iteration)?;
+        }
         let BareEdge(u, v) = filtered_edge.edge;
         simplex_buffer.insert(u);
         simplex_buffer.insert(v);
@@ -53,7 +60,7 @@ where
         simplex_buffer.clear();
     }
 
-    f
+    Ok(f)
 }
 
 fn add_flag_simplex<G: CriticalGrade, S>(
