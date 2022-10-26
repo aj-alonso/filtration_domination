@@ -16,7 +16,9 @@ RUN git clone https://bitbucket.org/mkerber/mpfree.git
 WORKDIR mpfree/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make
 
-COPY experiments/single_parameter/CMakeLists.txt experiments/single_parameter/single_parameter_glisse_pritam.cpp /single_parameter/
+COPY experiments/single_parameter/CMakeLists.txt \
+    experiments/single_parameter/single_parameter_glisse_pritam.cpp \
+    experiments/single_parameter/Flag_complex_edge_collapser.h /single_parameter/
 WORKDIR /single_parameter/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make
 

@@ -6,7 +6,6 @@
 # It is supposed to be a library, so don't commit Cargo.lock.
 /Cargo.lock
 
-code.zip
 /datasets/senate104_edge_list.txt_0.68902_distmat.txt
 /datasets/celegans_weighted_undirected_reindexed_for_matlab_maxdist_2.6429_SP_distmat.txt
 /datasets/network379_edge_list.txt_38.3873_distmat.txt
