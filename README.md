@@ -1,4 +1,5 @@
 # Filtration-domination algorithms
+Copyright 2022 TU Graz
 
 ## Summary
 
@@ -7,7 +8,8 @@ while maintaining the topological properties of its clique complex. An
 explanation of these terms, and a description of the algorithms, are in the
 paper
 
-"Filtration-Domination in Bifiltered Graphs"
+"Filtration-Domination in Bifiltered Graphs" by Ángel Javier Alonso, Michael
+Kerber, and Siddharth Pritam.
 
 The code also includes utilities to handle bifiltered graphs, compute its clique
 complexes, and run mpfree. See the documentation below.
@@ -127,3 +129,7 @@ option.
 
 Opening a pull requests is assumed to signal agreement with these licensing
 terms.
+
+## Contact
+
+Ángel Javier Alonso (alonsohernandez@tugraz.at)

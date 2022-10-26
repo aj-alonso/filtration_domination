@@ -1,5 +1,6 @@
 [package]
 name = "filtration-domination"
+authors = ["Ángel Javier Alonso <alonsohernandez@tugraz.at>"]
 description = "Algorithm to reduce bifiltered graphs while maintaining the topology of their clique complex."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
