@@ -9,16 +9,11 @@ pub enum Resource {
 impl Resource {
     fn to_libc(self) -> libc::c_int {
         match self {
+            // See the getrusage manpage for the meaning of these values.
             Resource::Myself => { 0}
             Resource::Children => { -1}
         }
     }
-}
-
-pub fn get_maximum_memory_usage_all_resources() -> Option<Kilobytes> {
-    let myself = get_maximum_memory_usage(Resource::Myself);
-    let children = get_maximum_memory_usage(Resource::Children);
-    myself.zip(children).map(|(a_kb, b_kb)| std::cmp::max(a_kb, b_kb))
 }
 
 pub fn get_maximum_memory_usage(resource: Resource) -> Option<Kilobytes> {
@@ -26,13 +21,11 @@ pub fn get_maximum_memory_usage(resource: Resource) -> Option<Kilobytes> {
 }
 
 fn get_rusage(resource: Resource) -> Option<libc::rusage> {
+    // No way around unsafe: we are calling the C API after all.
     unsafe {
         let mut rusage = std::mem::zeroed();
-        // -1 is RUSAGE_CHILDREN, which means to get the rusage for all children
-        // (and grandchildren, etc) processes that have respectively terminated
-        // and been waited for.
-        let retval = libc::getrusage(resource.to_libc(), &mut rusage);
-        if retval != 0 {
+        let ret = libc::getrusage(resource.to_libc(), &mut rusage);
+        if ret != 0 {
             return None;
         }
         Some(rusage)

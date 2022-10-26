@@ -16,7 +16,7 @@ use filtration_domination::removal::{
 use crate::table::{display_option, display_option_as};
 use crate::{display, display_duration, save_table, CliDataset, Row, Table};
 use filtration_domination::mpfree::CheckedMpfreeError;
-use crate::memory_usage::{get_maximum_memory_usage_all_resources, Kilobytes};
+use crate::memory_usage::{get_maximum_memory_usage, Kilobytes, Resource};
 
 // Degree of homology to do minimal presentations with.
 const HOMOLOGY: usize = 1;
@@ -43,9 +43,9 @@ enum MpfreeComputationModality {
 impl std::fmt::Display for MpfreeComputationModality {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MpfreeComputationModality::OnlyMpfree => write!(f, "Only mpfree"),
-            MpfreeComputationModality::FiltrationDomination => write!(f, "Collapse"),
-            MpfreeComputationModality::StrongFiltrationDomination => write!(f, "Strong collapse"),
+            MpfreeComputationModality::OnlyMpfree => write!(f, "only-mpfree"),
+            MpfreeComputationModality::FiltrationDomination => write!(f, "filtration-domination"),
+            MpfreeComputationModality::StrongFiltrationDomination => write!(f, "strong-filtration-domination"),
         }
     }
 }
@@ -144,7 +144,7 @@ pub fn compare_mpfree(opts: MpfreeCli) -> anyhow::Result<()> {
     };
     let duration_edge_removal = start.elapsed();
 
-    eprintln!("Computing the minimal presentation with mpfree...");
+    eprintln!("Computing the minimal presentation...");
     let mpfree = compute_minimal_presentation_with_check(
         &format!("comp_mpfree_{}_{}", opts.dataset, opts.modality),
         HOMOLOGY,
@@ -152,6 +152,14 @@ pub fn compare_mpfree(opts: MpfreeCli) -> anyhow::Result<()> {
         Some(memory_consumption_check),
     );
 
+    // Get the memory consumed by this process: this includes both the run of the filtration-domination
+    // algorithm and the construction of the filtration.
+    let myself_memory = get_maximum_memory_usage(Resource::Myself);
+    // Get the memory consumed by the children, that is, the call to mpfree as a subprocess.
+    let children_memory = get_maximum_memory_usage(Resource::Children);
+    // The maximum memory consumption would then be the maximum of "myself" and "children",
+    // as if a process would have done the removal and the filtration construction, and another ran mpfree.
+    let memory = myself_memory.zip(children_memory).map(|(a_kb, b_kb)| std::cmp::max(a_kb, b_kb));
 
     rows.push(MpfreeRow {
         dataset: opts.dataset,
@@ -161,10 +169,10 @@ pub fn compare_mpfree(opts: MpfreeCli) -> anyhow::Result<()> {
         removal_time: duration_edge_removal,
         mpfree_timers: mpfree.map(|info| info.timers),
         modality: opts.modality,
-        maximum_memory_kb: get_maximum_memory_usage_all_resources()
+        maximum_memory_kb: memory
     });
 
-    save_table(Table::new(rows), "compare_mpfree")?;
+    save_table(Table::new(rows), &format!("compare_mpfree_{}_{}", opts.dataset, opts.modality))?;
 
     Ok(())
 }
