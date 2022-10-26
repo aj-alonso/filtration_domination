@@ -58,7 +58,7 @@ $EXPERIMENT_BIN multiple-iterations $DATASETS
 $EXPERIMENT_BIN random-densities $DATASETS
 
 ASYMPTOTICS_DATASETS="torus uniform"
-$EXPERIMENT_BIN asymptotics $ASYMPTOTICS_DATASETS -n 200 -i 9 -s 400
+$EXPERIMENT_BIN asymptotics $ASYMPTOTICS_DATASETS -n 200 -i 9 -r 1 -s 400
 
 # Process charts and produce tables and graphics.
 PROCESS_CHARTS_SCRIPT="Rscript process_charts.r"
