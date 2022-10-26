@@ -8,7 +8,7 @@ COPY experiments/experiment_runner/src ./experiments/experiment_runner/src
 WORKDIR /opt/filt/experiments/experiment_runner
 RUN cargo build --profile release
 
-FROM docker.io/gcc:12-bullseye as cpp-builder
+FROM docker.io/buildpack-deps:bullseye as cpp-builder
 RUN apt-get update && apt-get install -y cmake libgtest-dev libboost-test-dev git && rm -rf /var/lib/apt/lists/*
 
 # Build mpfree
@@ -20,11 +20,8 @@ COPY experiments/single_parameter/CMakeLists.txt experiments/single_parameter/si
 WORKDIR /single_parameter/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make
 
-FROM docker.io/gcc:12-bullseye
+FROM docker.io/rust:1.62-bullseye
 COPY --from=rust-builder /opt/filt/experiments/experiment_runner/target/release/experiment_runner /usr/local/bin/experiment_runner
 COPY --from=cpp-builder /mpfree/build/mpfree /usr/local/bin/mpfree
 COPY --from=cpp-builder /single_parameter/build/single_parameter /usr/local/bin/single_parameter
-COPY download_datasets.sh experiments/run_experiments.sh ./
-RUN ./download_datasets.sh
-
-CMD ["./run_experiments.sh"]
+WORKDIR /opt/filt

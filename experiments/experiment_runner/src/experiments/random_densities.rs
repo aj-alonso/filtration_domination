@@ -91,7 +91,7 @@ impl Row for RandomDensitiesRow {
 
     fn fields(&self) -> Vec<Option<String>> {
         vec![
-            Some(display(self.dataset.to_static_str())),
+            Some(display(self.dataset)),
             Some(display(self.n_points)),
             Some(display(self.grade_structure)),
             Some(display(self.order)),

@@ -77,7 +77,7 @@ impl<E: StdError> Row for MpfreeRow<E> {
 
     fn fields(&self) -> Vec<Option<String>> {
         vec![
-            Some(display(self.dataset.to_static_str())),
+            Some(display(self.dataset)),
             Some(display(self.n_points)),
             Some(display(self.before)),
             Some(display(self.after)),

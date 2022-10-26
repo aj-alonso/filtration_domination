@@ -60,7 +60,7 @@ impl Row for AsymptoticsRow {
 
     fn fields(&self) -> Vec<Option<String>> {
         vec![
-            Some(display(self.dataset.to_static_str())),
+            Some(display(self.dataset)),
             Some(display(self.n_points)),
             Some(display(self.algorithm)),
             Some(display(self.max_degree)),

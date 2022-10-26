@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
+cd "$(dirname "$0")" || exit
 
 EXPERIMENT_BIN=experiment_runner
+MEMORY_LIMIT_GB=10
 
 DATASETS="senate eleg netwsc hiv dragon sphere uniform circle torus swiss-roll"
-
-# Create output directory if it does not exists
-mkdir -p charts
+ASYMPTOTICS_DATASETS="torus uniform"
+ORDERS="reverse-lexicographic reverse-colexicographic forward-colexicographic forward-lexicographic random"
+#ORDER_TIMEOUT=$((2 * 60 * 60))
+ORDER_TIMEOUT=$((5 * 60))
 
 # Experiment with different orders
-ORDERS="reverse-lexicographic reverse-colexicographic forward-colexicographic forward-lexicographic random"
-$EXPERIMENT_BIN order $DATASETS $(printf ' -o %s' $ORDERS)
+$EXPERIMENT_BIN order -t $ORDER_TIMEOUT $DATASETS $(printf ' -o %s' $ORDERS)
 
 # Experiment with different methods
 $EXPERIMENT_BIN removal $DATASETS
@@ -23,13 +25,11 @@ for dataset in $DATASETS; do
     if [[ "$dataset" = "dragon" ]] && [[ "$modality" = "only-mpfree" ]]; then
       # The dragon dataset consumes more than 64 GB of memory when building the flag filtration,
       # and will go into swap. We limit the amount of memory in that step to stop early.
-      $EXPERIMENT_BIN mpfree -m 64 "$dataset" "$modality"
+      $EXPERIMENT_BIN mpfree -m $MEMORY_LIMIT_GB "$dataset" "$modality"
     elif [[ "$dataset" = "hiv" ]] && [[ "$modality" = "only-mpfree" ]]; then
       # The hiv dataset consumes more than 64 GB of memory on the mpfree step,
       # and will go into swap. We limit the amount of virtual memory with ulimit so mpfree stops early.
-      ulimit -v $((64 * 1024 * 1024 * 1024))
-      $EXPERIMENT_BIN mpfree "$dataset" "$modality"
-      ulimit -v unlimited
+      (ulimit -v $((MEMORY_LIMIT_GB * 1024 * 1024)); $EXPERIMENT_BIN mpfree "$dataset" "$modality")
     else
       $EXPERIMENT_BIN mpfree "$dataset" "$modality"
     fi
@@ -49,5 +49,4 @@ $EXPERIMENT_BIN multiple-iterations $DATASETS
 
 $EXPERIMENT_BIN random-densities $DATASETS
 
-ASYMPTOTICS_DATASETS="torus uniform"
 $EXPERIMENT_BIN asymptotics $ASYMPTOTICS_DATASETS -n 200 -i 9 -r 1 -s 400

@@ -31,7 +31,7 @@ impl Row for MultipleIterationsRow {
 
     fn fields(&self) -> Vec<Option<String>> {
         vec![
-            Some(display(self.dataset.to_static_str())),
+            Some(display(self.dataset)),
             Some(display(self.iteration)),
             Some(display(self.edges)),
             Some(display_duration(&self.collapse_duration)),

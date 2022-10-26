@@ -103,9 +103,11 @@ impl CliDataset {
             },
         }
     }
+}
 
-    fn to_static_str(self) -> &'static str {
-        match self {
+impl std::fmt::Display for CliDataset {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
             CliDataset::Senate => "senate",
             CliDataset::Eleg => "eleg",
             CliDataset::Netwsc => "netwsc",
@@ -115,14 +117,8 @@ impl CliDataset {
             CliDataset::Sphere => "sphere",
             CliDataset::Circle => "circle",
             CliDataset::Torus => "torus",
-            CliDataset::SwissRoll => "swiss roll",
-        }
-    }
-}
-
-impl std::fmt::Display for CliDataset {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_static_str())
+            CliDataset::SwissRoll => "swiss-roll",
+        })
     }
 }
 
