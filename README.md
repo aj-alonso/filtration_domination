@@ -21,7 +21,8 @@ This project includes all code required to reproduce the experiments included in
 the associated paper mentioned above.
 
 Instructions on how to reproduce the experiments can be found in the
-`experiments` folder: we refer to the `experiments/README` file. For maximum
+`experiments` folder: we refer to the
+[experiments/README.md](./experiments/README.md) file. For maximum
 reproducibility, we have included a Docker image that setups the required
 environment, see the [Docker section](#Docker) to see how to build the image.
 
