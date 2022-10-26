@@ -39,5 +39,3 @@ simplex.expansion(2)
 pers = simplex.persistence(homology_coeff_field=2)
 for p in pers:
     print(p[1])
-#     if p[0] == 1:
-#         print(p[1])
