@@ -1,6 +1,8 @@
 /experiment_runner/target
 /experiment_runner/.idea
 edges.txt
+edges_out.txt
+/barcodes
 /charts
 /tmp
 
