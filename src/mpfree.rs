@@ -49,7 +49,7 @@ pub fn compute_minimal_presentation<VF: Value, G: CriticalGrade>(
 where
     Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
 {
-    let result = compute_minimal_presentation_with_check::<_, _, std::io::Error>(
+    let result = compute_minimal_presentation_with_check::<_, _, std::io::Error, fn(usize) -> Result<(), io::Error>>(
         name, homology, edge_list, None,
     );
     match result {
@@ -76,11 +76,11 @@ pub enum CheckedMpfreeError<E> {
 /// of the given bifiltered edge list.
 ///
 /// The `name` parameter is used to name and identify temporary files.
-pub fn compute_minimal_presentation_with_check<VF: Value, G: CriticalGrade, E: std::error::Error>(
+pub fn compute_minimal_presentation_with_check<VF: Value, G: CriticalGrade, E: std::error::Error, F: Fn(usize) -> Result<(), E>>(
     name: &str,
     homology: usize,
     edge_list: &EdgeList<FilteredEdge<G>>,
-    memory_check_fn: Option<fn(usize) -> Result<(), E>>,
+    memory_check_fn: Option<F>,
 ) -> Result<MinimalPresentationComputationSummary, CheckedMpfreeError<E>>
 where
     Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,

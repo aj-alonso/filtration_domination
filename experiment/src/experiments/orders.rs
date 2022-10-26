@@ -3,10 +3,7 @@ use std::fmt::Formatter;
 use std::time::Duration;
 
 use crate::CliDataset;
-use crate::TIMEOUT_SECONDS;
-use crate::{
-    display, display_duration, save_table, Algorithm, Row, Table, ALL_DATASETS, TIMEOUT_DURATION,
-};
+use crate::{display, display_duration, save_table, Algorithm, Row, Table, ALL_DATASETS};
 
 use filtration_domination::datasets::Threshold;
 use filtration_domination::edges::{EdgeList, FilteredEdge};
@@ -21,7 +18,8 @@ pub struct OrderCli {
     #[clap(short, arg_enum)]
     orders: Option<Vec<Order>>,
 
-    #[clap(short, default_value_t = TIMEOUT_SECONDS)]
+    /// Timeout, in seconds, when removing edges.
+    #[clap(short, default_value_t = 60 * 60 * 2)]
     timeout: u64,
 }
 
@@ -134,11 +132,8 @@ pub fn compare_orders(opts: OrderCli) -> anyhow::Result<()> {
             order.apply(&mut edges);
 
             let start = std::time::Instant::now();
-            let collapsed_edges = remove_filtration_dominated_timed(
-                &mut edges,
-                EdgeOrder::Maintain,
-                Some(TIMEOUT_DURATION),
-            );
+            let collapsed_edges =
+                remove_filtration_dominated_timed(&mut edges, EdgeOrder::Maintain, Some(timeout));
             let duration = start.elapsed();
 
             rows.push(OrderRow {

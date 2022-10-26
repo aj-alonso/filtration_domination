@@ -117,17 +117,16 @@ do_random_densities <- function() {
     cat(., file = "charts/compare_random_densities.tex")
 }
 
-format_kilobytes <- function(size_kb) {
-  mb <- size_kb/1024.0
-  gb <- size_kb/1024.0 ^ 2
+format_kilobytes <- function(kb) {
+  mb <- kb/1024.0
+  gb <- kb/1024.0 ^ 2
 
-  print(gb)
   if (gb > 1) {
-    formatted <- paste0(round(g, 2), "GB")
+    formatted <- paste0(round(gb, 2), "GB")
   } else if (mb > 1) {
-    formatted <- paste0(round(m, 2), "MB")
+    formatted <- paste0(round(mb, 2), "MB")
   } else{
-    formatted <- paste0(round(size_kb, 2), "B")
+    formatted <- paste0(round(kb, 2), "KB")
   }
 
   return(formatted)
@@ -148,7 +147,7 @@ do_mpfree <- function() {
     mutate(Speedup = first(Total)/Total) %>%
     mutate(Speedup = replace(Speedup, Speedup == 1, NA)) %>%
     mutate(Speedup = replace(Speedup, Speedup == 0., NA)) %>%
-    mutate(Memory = if_else(is.na(Speedup), "$\\infty$", format_kilobytes(Memory))) %>%
+    mutate(Memory = if_else(is.na(Speedup), "$\\infty$", mapply(format_kilobytes, Memory))) %>%
     mutate(Speedup = if_else(is.na(Speedup), "---", format(round(Speedup, 2), nsmall = 2)))
 
   options(knitr.kable.NA = '---')

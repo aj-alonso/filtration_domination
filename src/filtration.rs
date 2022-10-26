@@ -24,7 +24,7 @@ fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>
 where
     S: for<'a> SimplicialComplex<'a>,
 {
-    build_flag_filtration_with_check::<_, _, _, EmptyError>(vertices, max_dim, edges, None).unwrap()
+    build_flag_filtration_with_check::<_, _, _, EmptyError, fn(usize)-> Result<(), EmptyError>>(vertices, max_dim, edges, None).unwrap()
 }
 
 pub fn build_flag_filtration_with_check<
@@ -32,11 +32,12 @@ pub fn build_flag_filtration_with_check<
     S,
     I: Iterator<Item = FilteredEdge<G>>,
     E: StdError,
+    F: Fn(usize) -> Result<(), E>
 >(
     vertices: usize,
     max_dim: usize,
     edges: I,
-    check: Option<fn(usize) -> Result<(), E>>,
+    check: Option<F>,
 ) -> Result<Filtration<G, S>, E>
 where
     S: for<'a> SimplicialComplex<'a>,
@@ -54,7 +55,7 @@ where
 
     let mut simplex_buffer = BTreeSet::new();
     for (iteration, filtered_edge) in edges.enumerate() {
-        if let Some(check_fn) = check {
+        if let Some(ref check_fn) = check {
             check_fn(iteration)?;
         }
         let BareEdge(u, v) = filtered_edge.edge;

@@ -1,8 +1,8 @@
 mod experiments;
+mod memory_usage;
 mod single_collapse;
 mod table;
 mod utils;
-mod memory_usage;
 
 use crate::experiments::orders::{compare_orders, OrderCli};
 use crate::table::{display, display_duration, Row, Table};
@@ -20,13 +20,8 @@ use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
-use std::time::Duration;
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
-
-pub(crate) const TIMEOUT_SECONDS: u64 = 60 * 60 * 2;
-
-const TIMEOUT_DURATION: Duration = Duration::from_secs(TIMEOUT_SECONDS);
 
 /// Run experiments for edge collapse
 #[derive(Debug, Parser)]

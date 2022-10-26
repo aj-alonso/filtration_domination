@@ -17,7 +17,7 @@ DATASETS="senate eleg netwsc hiv dragon sphere uniform circle torus swiss-roll"
 mkdir -p charts
 
 # Experiment with different orders
-ORDERS="reverse-lexicographic reverse-colexicographic"
+ORDERS="reverse-lexicographic reverse-colexicographic forward-colexicographic forward-lexicographic random"
 $EXPERIMENT_BIN order $DATASETS $(printf ' -o %s' $ORDERS)
 
 # Experiment with different methods
@@ -29,7 +29,19 @@ MPFREE_OUT_FILE="charts/compare_mpfree.csv"
 ITER=0
 for dataset in $DATASETS; do
   for modality in $MODALITIES; do
-    $EXPERIMENT_BIN mpfree "$dataset" "$modality"
+    if [[ "$dataset" = "dragon" ]] && [[ "$modality" = "only-mpfree" ]]; then
+      # The dragon dataset consumes more than 64 GB of memory when building the flag filtration,
+      # and will go into swap. We limit the amount of memory in that step to stop early.
+      $EXPERIMENT_BIN mpfree -m 64 "$dataset" "$modality"
+    elif [[ "$dataset" = "hiv" ]] && [[ "$modality" = "only-mpfree" ]]; then
+      # The hiv dataset consumes more than 64 GB of memory on the mpfree step,
+      # and will go into swap. We limit the amount of virtual memory with ulimit so mpfree stops early.
+      ulimit -v $((64 * 1024 * 1024 * 1024))
+      $EXPERIMENT_BIN mpfree "$dataset" "$modality"
+      ulimit -v unlimited
+    else
+      $EXPERIMENT_BIN mpfree "$dataset" "$modality"
+    fi
 
     # Merge all produced CSVs.
     if [[ $ITER -eq 0 ]]; then
@@ -48,7 +60,6 @@ $EXPERIMENT_BIN random-densities $DATASETS
 
 ASYMPTOTICS_DATASETS="torus uniform"
 $EXPERIMENT_BIN asymptotics $ASYMPTOTICS_DATASETS -n 200 -i 3 -s 400
-
 
 # Process charts and produce tables and graphics.
 PROCESS_CHARTS_SCRIPT="Rscript process_charts.r"

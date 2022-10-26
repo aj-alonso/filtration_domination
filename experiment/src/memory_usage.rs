@@ -3,15 +3,15 @@ pub type Kilobytes = libc::c_long;
 #[derive(Debug, Copy, Clone)]
 pub enum Resource {
     Myself,
-    Children
+    Children,
 }
 
 impl Resource {
     fn to_libc(self) -> libc::c_int {
         match self {
             // See the getrusage manpage for the meaning of these values.
-            Resource::Myself => { 0}
-            Resource::Children => { -1}
+            Resource::Myself => 0,
+            Resource::Children => -1,
         }
     }
 }
