@@ -57,7 +57,6 @@ pub(crate) fn calculate_non_domination_region<VF: Value>(
                         &mut horizontal_stripes,
                         (*value_a, OneCriticalGrade::max_value()),
                     );
-                    // Advance edge_neighs.
                     edge_neighs.next();
                 }
                 // The current vertex of edge_neighs is in v_neighs.
@@ -68,7 +67,6 @@ pub(crate) fn calculate_non_domination_region<VF: Value>(
                         &mut horizontal_stripes,
                         (*value_a, value_a.join(value_b)),
                     );
-                    // Advance edge_neighs.
                     edge_neighs.next();
                 }
                 Ordering::Greater => {
@@ -81,7 +79,6 @@ pub(crate) fn calculate_non_domination_region<VF: Value>(
                 &mut horizontal_stripes,
                 (*value_a, OneCriticalGrade::max_value()),
             );
-            // Advance edge_neighs.
             edge_neighs.next();
         }
     }
