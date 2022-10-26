@@ -78,8 +78,15 @@ Rscript process_charts.r
 ```
 
 The tables and graphics will also be found in the `charts` directory.  Note that
-you will need to install the R dependencies that `process_charts.r` requires,
-read `process_charts.r` to see which are those.
+you will need to install the R dependencies that `process_charts.r` requires:
+[tidyverse](https://www.tidyverse.org/) and
+[kableExtra](https://cran.r-project.org/web/packages/kableExtra/index.html). You
+may install these dependencies by running the following command in an R console
+(the `R` command):
+
+``` r
+install.packages(c("tidyverse", "kableExtra"))
+```
 
 ### Docker
 

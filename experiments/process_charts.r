@@ -1,10 +1,5 @@
-library(ggplot2)
-library(tidyr)
-library(dplyr, warn.conflicts = FALSE)
-library(xtable)
+suppressPackageStartupMessages(library(tidyverse))
 library(kableExtra, warn.conflicts = FALSE)
-library(forcats)
-library(rlist)
 
 # Size of plot PDF.
 aspect_ratio <- 10 / 30
@@ -193,7 +188,7 @@ do_multiple_iterations <- function() {
     mutate(Time = coalesce(Time - lag(Time, n = 1), Time)) %>%
     mutate(Ratio = scales::percent(Ratio, accuracy = 0.2, suffix = "\\%")) %>%
     pivot_wider(names_from = Iteration, values_from = c(Ratio, Time)) %>%
-    relocate(c(Dataset, unlist(list.map(iters, iters ~ get_col(iters)))))
+    relocate(c(Dataset, unlist(iters %>% purrr::map(get_col))))
 
   kbl(iters_table, "latex",
       digits = 2,
