@@ -6,6 +6,26 @@ aspect_ratio <- 10 / 30
 width <- 10
 height <- aspect_ratio * width
 
+format_kilobytes <- function(kb) {
+  mb <- kb/1024.0
+  gb <- kb/1024.0 ^ 2
+
+  if (gb > 1) {
+    formatted <- paste0(round(gb, 2), " GB")
+  } else if (mb > 1) {
+    formatted <- paste0(round(mb, 2), " MB")
+  } else{
+    formatted <- paste0(round(kb, 2), " KB")
+  }
+
+  return(formatted)
+}
+
+format_percent <- function(x) {
+  return(sprintf("%0.1f%%", x * 100))
+}
+
+
 do_orders <- function() {
   ORDER_TIMEOUT <- 60 * 60 * 2
 
@@ -48,24 +68,26 @@ do_removals <- function() {
 
   # Create table.
   main <- removals_csv %>%
-    pivot_wider(names_from = Policy, values_from = c(After, Time))
+    mutate(RemainingPer = mapply(format_percent, After / Before)) %>%
+    pivot_wider(names_from = Policy, values_from = c(After, Time, RemainingPer))
   main_selected <- main %>%
     select(Dataset, Before,
-           "After_filtration-domination", "Time_filtration-domination",
-           "After_strong-filtration-domination", "Time_strong-filtration-domination",
-           "After_single-parameter", "Time_single-parameter")
+           "After_filtration-domination", "RemainingPer_filtration-domination", "Time_filtration-domination",
+           "After_strong-filtration-domination", "RemainingPer_strong-filtration-domination", "Time_strong-filtration-domination",
+           "After_single-parameter", "RemainingPer_single-parameter", "Time_single-parameter")
   kbl(main_selected, "latex",
       booktabs = T,
       label = "removals",
       caption = "Performance evaluation. The first two columns describe the datasets.
-      Each group of columns contains two subcolumns: ``After'', the number of resulting edges after running the corresponding algorithm, and ``Time (s)'', the time taken in seconds.",
+      Each group of columns contains three subcolumns: ``After'', the number of remaining edges after running the corresponding removal algorithm, ``\\%'', the percentage of remaining edges, and ``Time (s)'', the time taken in seconds.",
+      align = c("l", rep("r", 10)),
       col.names = c("Datasets", "Before",
-                    "After", "Time (s)",# "+par (s)",
-                    "After", "Time (s)",# "+par (s)",
-                    "After", "Time (s)"),
+                    "After", "%", "Time (s)",# "+par (s)",
+                    "After", "%", "Time (s)",# "+par (s)",
+                    "After", "%", "Time (s)"),
       table.envir = "table*") %>%
     kable_styling(latex_options = c("striped", "hold_position")) %>%
-    add_header_above(c(" " = 2, "Filtration-domination" = 2, "Strong filtration-domination" = 2, "Single-parameter" = 2)) %>%
+    add_header_above(c(" " = 2, "Filtration-domination" = 3, "Strong filtration-domination" = 3, "Single-parameter" = 3)) %>%
     cat(., file = "charts/compare_removal.tex")
 }
 
@@ -107,21 +129,6 @@ do_random_densities <- function() {
     kable_styling(latex_options = c("striped", "hold_position"), font_size = 9) %>%
     add_header_above(c(" " = 1, "Zeroed densities" = 2, "Random densities" = 2)) %>%
     cat(., file = "charts/compare_random_densities.tex")
-}
-
-format_kilobytes <- function(kb) {
-  mb <- kb/1024.0
-  gb <- kb/1024.0 ^ 2
-
-  if (gb > 1) {
-    formatted <- paste0(round(gb, 2), " GB")
-  } else if (mb > 1) {
-    formatted <- paste0(round(mb, 2), " MB")
-  } else{
-    formatted <- paste0(round(kb, 2), " KB")
-  }
-
-  return(formatted)
 }
 
 do_mpfree <- function() {
