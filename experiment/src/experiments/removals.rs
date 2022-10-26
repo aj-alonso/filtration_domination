@@ -1,4 +1,4 @@
-use crate::single_collapse::{run_single_parameter_edge_collapse};
+use crate::single_collapse::run_single_parameter_edge_collapse;
 use crate::utils::{delete_densities, forget_densities, normalize};
 use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
 use clap::Args;
@@ -7,7 +7,7 @@ use filtration_domination::datasets::Threshold;
 use filtration_domination::removal::{
     remove_filtration_dominated, remove_strongly_filtration_dominated, EdgeOrder,
 };
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
 #[derive(Debug, Args)]
@@ -26,12 +26,12 @@ enum RemovalPolicy {
     SingleParameter,
 }
 
-impl RemovalPolicy {
-    fn to_static_str(self) -> &'static str {
+impl Display for RemovalPolicy {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            RemovalPolicy::StrongFiltrationDomination => "Single Vertex",
-            RemovalPolicy::FiltrationDomination => "Geom",
-            RemovalPolicy::SingleParameter => "Glisse",
+            RemovalPolicy::StrongFiltrationDomination => write!(f, "Single Vertex"),
+            RemovalPolicy::FiltrationDomination => write!(f, "Geom"),
+            RemovalPolicy::SingleParameter => write!(f, "Glisse"),
         }
     }
 }
@@ -41,12 +41,6 @@ const ALL_REMOVAL_POLICIES: [RemovalPolicy; 3] = [
     RemovalPolicy::FiltrationDomination,
     RemovalPolicy::SingleParameter,
 ];
-
-impl std::fmt::Display for RemovalPolicy {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_static_str())
-    }
-}
 
 #[derive(Debug)]
 struct RemovalRow {
@@ -122,9 +116,9 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
                         remove_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
                     (resulting_edges.len(), start.elapsed())
                 }
-                RemovalPolicy::SingleParameter => run_single_parameter_edge_collapse(
-                    &single_parameter_edges
-                )?,
+                RemovalPolicy::SingleParameter => {
+                    run_single_parameter_edge_collapse(&single_parameter_edges)?
+                }
             };
 
             let row = RemovalRow {

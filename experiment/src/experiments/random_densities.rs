@@ -1,14 +1,14 @@
 use clap::Args;
 
-use std::fmt::Formatter;
-use std::time::Duration;
-use filtration_domination::datasets;
-use filtration_domination::datasets::Threshold;
-use filtration_domination::removal::{EdgeOrder, remove_strongly_filtration_dominated_timed};
-use filtration_domination::removal::utils::count_isolated_edges;
-use crate::{ALL_DATASETS, CliDataset, display, display_duration, Row, save_table, Table};
 use crate::experiments::orders::Order;
 use crate::utils::{forget_densities, random_densities, zero_grades};
+use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
+use filtration_domination::datasets;
+use filtration_domination::datasets::Threshold;
+use filtration_domination::removal::utils::count_isolated_edges;
+use filtration_domination::removal::{remove_strongly_filtration_dominated_timed, EdgeOrder};
+use std::fmt::Formatter;
+use std::time::Duration;
 
 const TIMEOUT_DURATION_RANDOM_DENSITIES: Duration = Duration::from_secs(60 * 60 * 2);
 

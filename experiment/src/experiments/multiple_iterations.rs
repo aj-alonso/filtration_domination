@@ -1,10 +1,10 @@
-use std::time::Duration;
 use clap::Args;
+use std::time::Duration;
 
+use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
 use filtration_domination::datasets;
 use filtration_domination::datasets::Threshold;
-use filtration_domination::removal::{EdgeOrder, remove_strongly_filtration_dominated};
-use crate::{ALL_DATASETS, CliDataset, display, display_duration, Row, save_table, Table};
+use filtration_domination::removal::{remove_strongly_filtration_dominated, EdgeOrder};
 
 #[derive(Debug, Args)]
 pub struct MultipleIterationsCli {

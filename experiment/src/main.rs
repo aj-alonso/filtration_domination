@@ -12,14 +12,14 @@ use clap::Parser;
 
 use crate::experiments::asymptotics::{compare_asymptotics, AsymptoticCli};
 use crate::experiments::mpfree::{compare_mpfree, MpfreeCli};
+use crate::experiments::multiple_iterations::{compare_multiple_iterations, MultipleIterationsCli};
+use crate::experiments::random_densities::{compare_random_densities, RandomDensitiesCli};
 use crate::experiments::removals::{compare_removals, RemovalCli};
 use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::time::Duration;
-use crate::experiments::multiple_iterations::{compare_multiple_iterations, MultipleIterationsCli};
-use crate::experiments::random_densities::{compare_random_densities, RandomDensitiesCli};
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
 
@@ -36,7 +36,7 @@ enum ExperimentCli {
     Mpfree(MpfreeCli),
     Asymptotics(AsymptoticCli),
     MultipleIterations(MultipleIterationsCli),
-    RandomDensities(RandomDensitiesCli)
+    RandomDensities(RandomDensitiesCli),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
