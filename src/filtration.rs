@@ -270,7 +270,7 @@ mod tests {
         let vertices: Vec<_> = f.simplicial_complex().simplex_vertices(3, 0).collect();
         assert_eq!(vec![0, 1, 2, 3], vertices);
 
-        let vertices: Vec<_> = f.simplicial_complex().simplex_vertices(3, 1).collect();
-        assert_eq!(vec![3, 4, 5, 6], vertices);
+        let vertices2: Vec<_> = f.simplicial_complex().simplex_vertices(3, 1).collect();
+        assert_eq!(vec![3, 4, 5, 6], vertices2);
     }
 }
