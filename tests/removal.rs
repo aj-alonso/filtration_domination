@@ -20,7 +20,7 @@ fn [<$name _remove>]() {
         Dataset::$dataset,
         Threshold::KeepAll,
         None,
-        true).unwrap();
+        true).expect("Couldn't open dataset");
 
     let remaining_edges =
         remove_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
@@ -46,7 +46,7 @@ fn [<$name _remove_strong>]() {
         Dataset::$dataset,
         Threshold::KeepAll,
         None,
-        true).unwrap();
+        true).expect("Couldn't open dataset");
 
     let remaining_edges =
         remove_strongly_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
