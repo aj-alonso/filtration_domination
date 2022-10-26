@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM docker.io/rust:1.62-bullseye as rust-builder
 WORKDIR /opt/filt
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 COPY src ./src/
 COPY experiments/experiment_runner/Cargo.toml experiments/experiment_runner/Cargo.lock ./experiments/experiment_runner/
 COPY experiments/experiment_runner/src ./experiments/experiment_runner/src
