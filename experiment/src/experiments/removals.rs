@@ -1,12 +1,14 @@
-use clap::Args;
-use std::fmt::Formatter;
-use std::time::Duration;
-use filtration_domination::datasets;
-use filtration_domination::datasets::{Threshold};
-use filtration_domination::removal::{EdgeOrder, remove_filtration_dominated, remove_strongly_filtration_dominated};
-use crate::{ALL_DATASETS, CliDataset, display, display_duration, Row, save_table, Table};
 use crate::single_collapse::{run_single_parameter_edge_collapse, SingleCollapser};
 use crate::utils::{delete_densities, forget_densities, normalize};
+use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
+use clap::Args;
+use filtration_domination::datasets;
+use filtration_domination::datasets::Threshold;
+use filtration_domination::removal::{
+    remove_filtration_dominated, remove_strongly_filtration_dominated, EdgeOrder,
+};
+use std::fmt::Formatter;
+use std::time::Duration;
 
 #[derive(Debug, Args)]
 pub struct RemovalCli {
@@ -36,8 +38,8 @@ impl RemovalPolicy {
 
 const ALL_REMOVAL_POLICIES: [RemovalPolicy; 3] = [
     RemovalPolicy::StrongFiltrationDomination,
-RemovalPolicy::FiltrationDomination,
-RemovalPolicy::SingleParameterGlisse,
+    RemovalPolicy::FiltrationDomination,
+    RemovalPolicy::SingleParameterGlisse,
 ];
 
 impl std::fmt::Display for RemovalPolicy {

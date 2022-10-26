@@ -1,8 +1,8 @@
-use rand::distributions::Uniform;
-use rand::distributions::uniform::SampleUniform;
-use rand::Rng;
 use filtration_domination::edges::{EdgeList, FilteredEdge};
 use filtration_domination::{CriticalGrade, OneCriticalGrade, Value};
+use rand::distributions::uniform::SampleUniform;
+use rand::distributions::Uniform;
+use rand::Rng;
 
 pub fn delete_densities<VF: Value>(
     edge_list: &EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
@@ -19,20 +19,23 @@ pub fn delete_densities<VF: Value>(
     new_edge_list
 }
 
-pub fn forget_densities<VF: Value>(edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>) {
+pub fn forget_densities<VF: Value>(
+    edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
+) {
     for edge in edge_list.edges_mut() {
         edge.grade.0[0] = VF::zero();
     }
 }
 
-pub fn random_densities<VF: Value + SampleUniform>(edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>) {
+pub fn random_densities<VF: Value + SampleUniform>(
+    edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
+) {
     let distribution = Uniform::new(VF::zero(), VF::max_value());
     let mut rng = rand::thread_rng();
     for edge in edge_list.edges_mut() {
         edge.grade.0[0] = rng.sample(&distribution);
     }
 }
-
 
 pub fn critical_values<VF: Value, const N: usize>(
     edges: &mut [FilteredEdge<OneCriticalGrade<VF, N>>],

@@ -1,6 +1,6 @@
 mod experiments;
-mod table;
 mod single_collapse;
+mod table;
 mod utils;
 
 use crate::experiments::orders::{compare_orders, OrderCli};
@@ -10,12 +10,12 @@ use filtration_domination::datasets;
 
 use clap::Parser;
 
+use crate::experiments::removals::{compare_removals, RemovalCli};
 use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::time::Duration;
-use crate::experiments::removals::{compare_removals, RemovalCli};
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
 

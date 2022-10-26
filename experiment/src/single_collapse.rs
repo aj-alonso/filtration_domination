@@ -1,10 +1,10 @@
 use anyhow::Result;
-use filtration_domination::edges::{EdgeList, FilteredEdge, write_edge_list};
+use filtration_domination::edges::{write_edge_list, EdgeList, FilteredEdge};
+use filtration_domination::OneCriticalGrade;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::process::Command;
 use std::time::Duration;
-use filtration_domination::OneCriticalGrade;
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum SingleCollapser {
