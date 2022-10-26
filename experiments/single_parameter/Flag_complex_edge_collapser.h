@@ -1,38 +1,42 @@
 /*    This file is part of the Gudhi Library - https://gudhi.inria.fr/ - which is released under MIT.
-*    See file LICENSE or go to https://gudhi.inria.fr/licensing/ for full license details.
-*    Author(s):       Siddharth Pritam, Marc Glisse
-*
-*    Copyright (C) 2020 Inria
-*
-*    Modification(s):
-*      - 2020/03 Vincent Rouvreau: integration to the gudhi library
-*      - 2021 Marc Glisse: complete rewrite
-*      - YYYY/MM Author: Description of the modification
-*/
+ *    See file LICENSE or go to https://gudhi.inria.fr/licensing/ for full license details.
+ *    Author(s):       Siddharth Pritam, Marc Glisse
+ *
+ *    Copyright (C) 2020 Inria
+ *
+ *    Modification(s):
+ *      - 2020/03 Vincent Rouvreau: integration to the gudhi library
+ *      - 2021 Marc Glisse: complete rewrite
+ *      - YYYY/MM Author: Description of the modification
+ */
+
 #ifndef FLAG_COMPLEX_EDGE_COLLAPSER_H_
 #define FLAG_COMPLEX_EDGE_COLLAPSER_H_
 
 #include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
 
+#ifdef GUDHI_USE_TBB
+#include <tbb/parallel_sort.h>
+#endif
+
 #include <utility>
 #include <vector>
 #include <tuple>
 #include <algorithm>
 #include <limits>
-#include <iostream>
-#include <fstream>
-#include <chrono>
 
-namespace Gudhi::collapse {
+namespace Gudhi {
+
+namespace collapse {
 
 /** \private
-*
-* \brief Flag complex sparse matrix data structure.
-*
-* \tparam Vertex type must be an integer type.
-* \tparam Filtration type for the value of the filtration function.
-*/
+ *
+ * \brief Flag complex sparse matrix data structure.
+ *
+ * \tparam Vertex type must be an integer type.
+ * \tparam Filtration type for the value of the filtration function.
+ */
 template<typename Vertex, typename Filtration_value>
 struct Flag_complex_edge_collapser {
   using Filtered_edge = std::tuple<Vertex, Vertex, Filtration_value>;
@@ -46,15 +50,15 @@ struct Flag_complex_edge_collapser {
 
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
   // Minimal matrix interface
- // Using this matrix generally helps performance, but the memory use may be excessive for a very sparse graph
- // (and in extreme cases the constant initialization of the matrix may start to dominate the runnning time).
- // Are there cases where the matrix is too big but a hash table would help?
- std::vector<Filtration_value> neighbors_data;
- void init_neighbors_dense(){
-   neighbors_data.clear();
-   neighbors_data.resize(num_vertices*num_vertices, std::numeric_limits<Filtration_value>::infinity());
- }
- Filtration_value& neighbors_dense(Vertex i, Vertex j){return neighbors_data[num_vertices*j+i];}
+  // Using this matrix generally helps performance, but the memory use may be excessive for a very sparse graph
+  // (and in extreme cases the constant initialization of the matrix may start to dominate the running time).
+  // Are there cases where the matrix is too big but a hash table would help?
+  std::vector<Filtration_value> neighbors_data;
+  void init_neighbors_dense(){
+    neighbors_data.clear();
+    neighbors_data.resize(num_vertices*num_vertices, std::numeric_limits<Filtration_value>::infinity());
+  }
+  Filtration_value& neighbors_dense(Vertex i, Vertex j){return neighbors_data[num_vertices*j+i];}
 #endif
 
   // This does not touch the events list, only the adjacency matrix(es)
@@ -63,7 +67,7 @@ struct Flag_complex_edge_collapser {
     neighbors[v][u]=f;
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
     neighbors_dense(u,v)=f;
-   neighbors_dense(v,u)=f;
+    neighbors_dense(v,u)=f;
 #endif
   }
   void remove_neighbor(Vertex u, Vertex v) {
@@ -71,7 +75,7 @@ struct Flag_complex_edge_collapser {
     neighbors[v].erase(u);
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
     neighbors_dense(u,v)=std::numeric_limits<Filtration_value>::infinity();
-   neighbors_dense(v,u)=std::numeric_limits<Filtration_value>::infinity();
+    neighbors_dense(v,u)=std::numeric_limits<Filtration_value>::infinity();
 #endif
   }
 
@@ -92,7 +96,7 @@ struct Flag_complex_edge_collapser {
       neighbors_seq[v].emplace_back(u, f);
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
       neighbors_dense(u,v)=f;
-     neighbors_dense(v,u)=f;
+      neighbors_dense(v,u)=f;
 #endif
     }
     for(std::size_t i=0;i<neighbors_seq.size();++i){
@@ -108,8 +112,8 @@ struct Flag_complex_edge_collapser {
   // At some point it helped gcc to add __attribute__((noinline)) here, otherwise we had +50% on the running time
   // on one example. It looks ok now, or I forgot which example that was.
   void common_neighbors(boost::container::flat_set<Vertex>& e_ngb,
-                        std::vector<std::pair<Filtration_value, Vertex>>& e_ngb_later,
-                        Vertex u, Vertex v, Filtration_value f_event){
+      std::vector<std::pair<Filtration_value, Vertex>>& e_ngb_later,
+      Vertex u, Vertex v, Filtration_value f_event){
     // Using neighbors_dense here seems to hurt, even if we loop on the smaller of nu and nv.
     Ngb_list const&nu = neighbors[u];
     Ngb_list const&nv = neighbors[v];
@@ -142,10 +146,10 @@ struct Flag_complex_edge_collapser {
     // Some efficient operations on sets work best with bitsets, although the need for a map complicates things.
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
     for(auto v : e_ngb) {
-     // if(v==c)continue;
-     if(neighbors_dense(v,c) > f) return false;
-   }
-   return true;
+      // if(v==c)continue;
+      if(neighbors_dense(v,c) > f) return false;
+    }
+    return true;
 #else
     auto&&nc = neighbors[c];
     // if few neighbors, use dichotomy? Seems slower.
@@ -228,8 +232,9 @@ struct Flag_complex_edge_collapser {
             }
           }
           if(dominator==-1) break;
-          bool still_dominated;
-          do {
+          // Push as long as dominator remains a dominator.
+          // Iterate on times where at least one neighbor appears.
+          for (bool still_dominated = true; still_dominated; ) {
             if(e_ngb_later_begin == e_ngb_later_end) {
               dead = true; goto end_move;
             }
@@ -239,12 +244,12 @@ struct Flag_complex_edge_collapser {
               heapified=true;
             }
             time = e_ngb_later_begin->first; // first place it may become critical
-            still_dominated = true;
+            // Update the neighborhood for this new time, while checking if any of the new neighbors break domination.
             while (e_ngb_later_begin != e_ngb_later_end && e_ngb_later_begin->first <= time) {
               Vertex w = e_ngb_later_begin->second;
 #ifdef GUDHI_COLLAPSE_USE_DENSE_ARRAY
               if (neighbors_dense(dominator,w) > e_ngb_later_begin->first)
-               still_dominated = false;
+                still_dominated = false;
 #else
               auto& ngb_dom = neighbors[dominator];
               auto wit = ngb_dom.find(w); // neighborhood may be open or closed, it does not matter
@@ -254,12 +259,12 @@ struct Flag_complex_edge_collapser {
               e_ngb.insert(w);
               std::pop_heap(e_ngb_later_begin, e_ngb_later_end--, cmp1);
             }
-          } while (still_dominated); // this doesn't seem to help that much...
+          } // this doesn't seem to help that much...
         }
-        end_move:
+end_move:
         if(dead) {
           remove_neighbor(u, v);
-        } else if(start_time != time){
+        } else if(start_time != time) {
           delay_neighbor(u, v, time);
           res.emplace_back(u, v, time);
         } else {
@@ -287,7 +292,13 @@ auto flag_complex_collapse_edges(FilteredEdgeRange&& edges, Delay&&delay) {
   using Edge_collapser = Flag_complex_edge_collapser<Vertex, Filtration_value>;
   if (first_edge_itr != std::end(edges)) {
     auto edges2 = to_range<std::vector<typename Edge_collapser::Filtered_edge>>(std::forward<FilteredEdgeRange>(edges));
+#ifdef GUDHI_USE_TBB
+    // I think this sorting is always negligible compared to the collapse, but parallelizing it shouldn't hurt.
+    tbb::parallel_sort(edges2.begin(), edges2.end(),
+        [](auto const&a, auto const&b){return std::get<2>(a)>std::get<2>(b);});
+#else
     std::sort(edges2.begin(), edges2.end(), [](auto const&a, auto const&b){return std::get<2>(a)>std::get<2>(b);});
+#endif
     Edge_collapser edge_collapser;
     edge_collapser.process_edges(edges2, std::forward<Delay>(delay));
     return edge_collapser.output();
@@ -296,27 +307,29 @@ auto flag_complex_collapse_edges(FilteredEdgeRange&& edges, Delay&&delay) {
 }
 
 /** \brief Implicitly constructs a flag complex from edges as an input, collapses edges while preserving the persistent
-* homology and returns the remaining edges as a range. The filtration value of vertices is irrelevant to this function.
-*
-* \param[in] edges Range of Filtered edges. There is no need for the range to be sorted, as it will be done internally.
-*
-* \tparam FilteredEdgeRange Range of `std::tuple<Vertex_handle, Vertex_handle, Filtration_value>`
-* where `Vertex_handle` is the type of a vertex index.
-*
-* \return Remaining edges after collapse as a range of
-* `std::tuple<Vertex_handle, Vertex_handle, Filtration_value>`.
-*
-* \ingroup edge_collapse
-*
-* \note
-* Advanced: Defining the macro GUDHI_COLLAPSE_USE_DENSE_ARRAY tells gudhi to allocate a square table of size the
-* maximum vertex index. This usually speeds up the computation for dense graphs. However, for sparse graphs, the memory
-* use may be problematic and initializing this large table may be slow.
-*/
+ * homology and returns the remaining edges as a range. The filtration value of vertices is irrelevant to this function.
+ *
+ * \param[in] edges Range of Filtered edges. There is no need for the range to be sorted, as it will be done internally.
+ *
+ * \tparam FilteredEdgeRange Range of `std::tuple<Vertex_handle, Vertex_handle, Filtration_value>`
+ * where `Vertex_handle` is the type of a vertex index.
+ *
+ * \return Remaining edges after collapse as a range of
+ * `std::tuple<Vertex_handle, Vertex_handle, Filtration_value>`.
+ *
+ * \ingroup edge_collapse
+ *
+ * \note
+ * Advanced: Defining the macro GUDHI_COLLAPSE_USE_DENSE_ARRAY tells gudhi to allocate a square table of size the
+ * maximum vertex index. This usually speeds up the computation for dense graphs. However, for sparse graphs, the memory
+ * use may be problematic and initializing this large table may be slow.
+ */
 template<class FilteredEdgeRange> auto flag_complex_collapse_edges(const FilteredEdgeRange& edges) {
   return flag_complex_collapse_edges(edges, [](auto const&d){return d;});
 }
 
+}  // namespace collapse
+
 }  // namespace Gudhi
 
-#endif
+#endif  // FLAG_COMPLEX_EDGE_COLLAPSER_H_

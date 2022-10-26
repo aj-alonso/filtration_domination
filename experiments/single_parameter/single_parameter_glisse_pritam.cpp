@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <chrono>
 
 #include "Flag_complex_edge_collapser.h"
