@@ -8,6 +8,10 @@ homepage = "https://github.com/aj-alonso/filtration_domination"
 repository = "https://github.com/aj-alonso/filtration_domination"
 version = "0.0.1"
 edition = "2021"
+include = [
+    "src/**/*.rs",
+    "Cargo.toml"
+]
 
 [dependencies]
 num = "0.4.0" # Generic numbers.
