@@ -11,3 +11,7 @@ libc = "0.2.126"
 procfs = "0.13.2"
 rand = "0.8.5"
 thiserror = "1.0.31"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1

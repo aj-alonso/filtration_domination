@@ -1,6 +1,10 @@
 /target
-/Cargo.lock
 /.idea
+/charts
+/edges.txt
+
+# It is supposed to be a library, so don't commit Cargo.lock.
+/Cargo.lock
 
 code.zip
 /datasets/senate104_edge_list.txt_0.68902_distmat.txt
