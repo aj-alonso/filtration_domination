@@ -2,6 +2,7 @@ mod experiments;
 mod single_collapse;
 mod table;
 mod utils;
+mod memory_usage;
 
 use crate::experiments::orders::{compare_orders, OrderCli};
 use crate::table::{display, display_duration, Row, Table};
