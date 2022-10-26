@@ -2,9 +2,8 @@ library(ggplot2)
 library(tidyr)
 library(dplyr, warn.conflicts = FALSE)
 library(xtable)
-library(kableExtra)
+library(kableExtra, warn.conflicts = FALSE)
 library(forcats)
-library(formattable)
 library(rlist)
 
 # Size of plot PDF.
@@ -15,17 +14,20 @@ height <- aspect_ratio * width
 do_orders <- function() {
   ORDER_TIMEOUT <- 60 * 60 * 2
 
-  orders_csv <- read.csv(file = "compare_orders.csv") %>%
+  orders_csv <- read.csv(file = "charts/compare_orders.csv") %>%
     mutate(Time = if_else(Time >= ORDER_TIMEOUT, NA_real_, Time)) %>%
     mutate(After = replace(After, is.na(Time), NA_integer_)) %>%
     mutate(Ratio = 1. - After / Before)
 
   order_table <- orders_csv %>%
     select(Dataset, Modality, Order, Ratio) %>%
-    mutate(Modality = fct_relevel(Modality, "Filtration-domination", "Strong filtration-domination")) %>%
-    mutate(Order = fct_relevel(Order, "Rand", "Colex", "Lex", "RevColex", "RevLex")) %>%
+    mutate(Modality = factor(Modality, c("Filtration-domination", "Strong filtration-domination", ordered = TRUE))) %>%
+    # mutate(Modality = fct_relevel(Modality, "Filtration-domination", "Strong filtration-domination")) %>%
+    mutate(Order = factor(Order, c("Rand", "Colex", "Lex", "RevColex", "RevLex"))) %>%
+    # mutate(Order = fct_relevel(Order, "Rand", "Colex", "Lex", "RevColex", "RevLex")) %>%
     mutate(Order = fct_recode(Order, Random = "Rand", Colexicographic = "Colex", Lexicographic = "Lex", "Reverse colex." = "RevColex", "Reverse lex." = "RevLex")) %>%
-    mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll")) %>%
+    mutate(Dataset = factor(Dataset, c("senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll"))) %>%
+    # mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll")) %>%
     arrange(Dataset, Modality, Order) %>%
     filter(Modality == "Filtration-domination") %>%
     group_by(Dataset) %>%
@@ -40,15 +42,17 @@ do_orders <- function() {
       caption = "Comparison of the edges removed when using different orders.
       For each dataset and order, we show the percentage of removed edges after a single run of the filtration-domination removal algorithm.
       The cases where the algorithm took more than 2 hours are marked with an ---.",
-      align = c("l", rep("r", 10))
+      align = c("l", rep("r", 10)),
+      table.envir = "table*",
+      position = "!h"
   ) %>%
     kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
-    add_header_above(c(" " = 1, "Datasets" = 10)) %>%
-    cat(., file = "compare_orders.tex")
+    add_header_above(c(" " = 1, "Datasets" = ncol(order_table) - 1)) %>%
+    cat(., file = "charts/compare_orders.tex")
 }
 
 do_removals <- function() {
-  removals_csv <- read.csv(file = "compare_removal.csv")
+  removals_csv <- read.csv(file = "charts/compare_removal.csv")
 
   # Create table.
   main <- removals_csv %>%
@@ -66,121 +70,16 @@ do_removals <- function() {
       col.names = c("Datasets", "Before",
                     "After", "Time (s)",# "+par (s)",
                     "After", "Time (s)",# "+par (s)",
-                    "After", "Time (s)")) %>%
+                    "After", "Time (s)"),
+      table.envir = "table*") %>%
     kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
     add_header_above(c(" " = 2, "Filtration-domination" = 2, "Strong filtration-domination" = 2, "Single-parameter" = 2)) %>%
-    cat(., file = "compare_removal.tex")
-  df <- removals_csv %>%
-    select(-Points) %>%
-    mutate(Time = paste0("(", Time, "s)")) %>%
-    unite(After, After, Time, sep = ' ') %>%
-    pivot_wider(names_from = Policy, values_from = After)
-  kbl(df, "latex", booktabs = T,
-      label = "removals_full",
-      caption = "Removal comparisons, full table.") %>%
-    kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
-    cat(., file = "compare_removal_full.tex")
-}
-
-do_removals_presentation <- function() {
-  removals_csv <- read.csv(file = "compare_removal.csv")
-
-  # Create table.
-  main <- removals_csv %>%
-    mutate(Ratio = 1. - After / Before) %>%
-    select(Dataset, Ratio, Time, Policy) %>%
-    mutate(Ratio = scales::percent(Ratio, accuracy = 0.2, suffix = "%")) %>%
-    pivot_wider(names_from = Policy, values_from = c(Ratio, Time))
-
-  plot_data <- removals_csv %>%
-    mutate(Ratio = 1. - After / Before) %>%
-    select(Dataset, Ratio, Time, Policy)
-  ggplot(plot_data, aes(y = Ratio, x = Dataset, fill = Policy)) +
-    geom_bar(position = "dodge", stat = "identity", width = 0.5) +
-    labs(x = "Dataset", y = "Removed edges") +
-    scale_y_continuous(labels = scales::percent) +
-    theme(legend.position="bottom")
-  ggsave("chart_presentation_removals.pdf", width = 10, height = 10 * 1/3)
-
-  main_selected <- main %>%
-    select(Dataset,
-           "Ratio_Geom", "Time_Geom",# "Time_Geom Par",
-           "Ratio_Single Vertex", "Time_Single Vertex",# "Time_Single Vertex Par",
-           "Ratio_Glisse", "Time_Glisse")
-  kbl(main_selected, "latex",
-      booktabs = T,
-      label = "removals",
-      col.names = c("Datasets",
-                    "Ratio", "Time (s)",# "+par (s)",
-                    "Ratio", "Time (s)",# "+par (s)",
-                    "Ratio", "Time (s)")) %>%
-    kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
-    add_header_above(c(" " = 1, "Filt.-dom." = 2, "Strong filt.-dom." = 2, "Single-parameter" = 2)) %>%
-    cat(., file = "chart_presentation_removals.tex")
-}
-
-do_orders_presentation <- function() {
-  ORDER_TIMEOUT <- 60 * 60 * 2
-
-  orders_csv <- read.csv(file = "compare_orders.csv") %>%
-    mutate(Time = if_else(Time >= ORDER_TIMEOUT, NA_real_, Time)) %>%
-    mutate(After = replace(After, is.na(Time), NA_integer_)) %>%
-    mutate(Ratio = 1. - After / Before)
-
-  plot_data <- orders_csv %>%
-    select(Dataset, Modality, Order, Ratio) %>%
-    mutate(Modality = fct_relevel(Modality, "Filtration-domination", "Strong filtration-domination")) %>%
-    mutate(Order = fct_relevel(Order, "Rand", "Colex", "Lex", "RevColex", "RevLex")) %>%
-    mutate(Order = fct_recode(Order, Random = "Rand", Colexicographic = "Colex", Lexicographic = "Lex", "Reverse colex." = "RevColex", "Reverse lex." = "RevLex")) %>%
-    mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll")) %>%
-    arrange(Dataset, Modality, Order) %>%
-    filter(Modality == "Filtration-domination")
-  ggplot(plot_data, aes(y = Ratio, x = Dataset, fill = Order)) +
-    geom_bar(position = "dodge", stat = "identity", width = 0.5) +
-    labs(x = "Dataset", y = "Removed edges") +
-    scale_y_continuous(labels = scales::percent) +
-    theme(legend.position="bottom")
-  ggsave("chart_presentation_orders.pdf", width = 10, height = 10 * 1/3)
-}
-
-do_mpfree_presentation <- function() {
-  mpfree_csv <- read.csv(file = "compare_mpfree.csv", na.strings = c("NA", "-")) %>%
-    mutate(Modality = fct_relevel(Modality, "Only mpfree", "Collapse", "Strong collapse")) %>%
-    mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon",
-                                 "uniform", "torus", "swiss roll", "sphere", "circle")) %>%
-    arrange(Dataset) %>%
-    rowwise() %>%
-    mutate(Total = sum(c(Collapse, Build, Mpfree), na.rm = TRUE))
-
-  speedup_df <- mpfree_csv %>%
-    group_by(Dataset) %>%
-    arrange(Modality, .by_group = T) %>%
-    mutate(Speedup = first(Total)/Total) %>%
-    mutate(Speedup = replace(Speedup, Speedup == 1, NA)) %>%
-    mutate(Speedup = replace(Speedup, Speedup == 0., NA)) %>%
-    mutate(Speedup = if_else(is.na(Speedup), "$\\infty$", format(round(Speedup, 2), nsmall = 2))) %>%
-    filter(Modality == "Strong collapse")
-
-  options(knitr.kable.NA = '$\\infty$')
-  hor_table <- speedup_df %>%
-    select(Dataset, Speedup) %>%
-    select(Dataset,
-           Speedup)
-  kbl(hor_table, "latex",
-      digits = 2,
-      escape = FALSE,
-      booktabs = T,
-      label = "mpfree",
-      col.names = c("Dataset",
-                    "Speedup"),
-      align = c("l", "r")) %>%
-    kable_styling(latex_options = c("striped", "hold_position")) %>%
-    cat(., file = "chart_presentation_mpfree.tex")
+    cat(., file = "charts/compare_removal.tex")
 }
 
 do_random_densities <- function() {
   TIMEOUT <- 60 * 30
-  all_random_densities <- read.csv(file = "compare_random_densities.csv")
+  all_random_densities <- read.csv(file = "charts/compare_random_densities.csv")
 
   random_densities <- all_random_densities %>%
     # Select reverse lexicographic orders.
@@ -209,32 +108,20 @@ do_random_densities <- function() {
       critical grade), and ``Removed'' is the percentage of edges removed after
       running our strong filtration-domination removal algorithm.",
       col.names = c("Dataset", "Free at birth", "Removed", "Free at birth", "Removed"),
-      align = c("l", rep("r", 4))) %>%
+      align = c("l", rep("r", 4)),
+      table.envir = "table*",
+      position = "!h"
+  ) %>%
     kable_styling(latex_options = c("striped", "hold_position"), font_size = 9) %>%
     add_header_above(c(" " = 1, "Zeroed densities" = 2, "Random densities" = 2)) %>%
-    cat(., file = "compare_random_densities.tex")
-}
-
-do_preliminary <- function() {
-  preliminary_csv <- read.csv(file = "compare_preliminary.csv") %>%
-    mutate(Ratio = After / Before) %>%
-    rename(Algorithms = Modality) %>%
-    mutate(Algorithms = replace(Algorithms, Algorithms == "Ours", "Our approach on bifiltrations")) %>%
-    mutate(Algorithms = replace(Algorithms, Algorithms == "Giotto", "Single-parameter"))
-
-  ggplot(preliminary_csv, aes(y = Ratio, x = Dataset, fill = Algorithms)) +
-    geom_bar(position = "dodge", stat = "identity", width = 0.5) +
-    labs(x = "Datset", y = "Remaining edges") +
-    scale_y_continuous(labels = scales::percent)
-
-  ggsave("compare_preliminary.pdf", width = 8, height = 5 * aspect_ratio)
+    cat(., file = "charts/compare_random_densities.tex")
 }
 
 do_mpfree <- function() {
-  mpfree_csv <- read.csv(file = "compare_mpfree.csv", na.strings = c("NA", "-")) %>%
-    mutate(Modality = fct_relevel(Modality, "Only mpfree", "Collapse", "Strong collapse")) %>%
-    mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon",
-                                 "sphere", "uniform", "circle", "torus", "swiss roll")) %>%
+  mpfree_csv <- read.csv(file = "charts/compare_mpfree.csv", na.strings = c("NA", "-")) %>%
+    mutate(Modality = factor(Modality, c("only-mpfree", "filtration-domination", "strong-filtration-domination"))) %>%
+    mutate(Dataset = factor(Dataset, c("senate", "eleg", "netwsc", "hiv", "dragon",
+                                 "sphere", "uniform", "circle", "torus", "swiss roll"), ordered = TRUE)) %>%
     arrange(Dataset) %>%
     rowwise() %>%
     mutate(Total = sum(c(Collapse, Build, Mpfree), na.rm = TRUE))
@@ -252,9 +139,9 @@ do_mpfree <- function() {
     select(Dataset, Points, Before, Modality, After, Collapse, Build, Mpfree, Speedup) %>%
     pivot_wider(names_from = Modality, values_from = c(Collapse, After, Build, Mpfree, Speedup)) %>%
     select(Dataset,
-           "Build_Only mpfree", "Mpfree_Only mpfree",
+           "Build_only-mpfree", "Mpfree_only-mpfree",
            # "Collapse_Collapse", "Build_Collapse", "Mpfree_Collapse", "Speedup_Collapse",
-           "Collapse_Strong collapse", "Build_Strong collapse", "Mpfree_Strong collapse", "Speedup_Strong collapse")
+           "Collapse_strong-filtration-domination", "Build_strong-filtration-domination", "Mpfree_strong-filtration-domination", "Speedup_strong-filtration-domination")
   kbl(hor_table, "latex",
       digits = 2,
       escape = FALSE,
@@ -268,17 +155,18 @@ do_mpfree <- function() {
                     "Build (s)", "mpfree (s)",
                     # "Removal (s)", "Build (s)", "mpfree (s)", "Speedup",
                     "Removal (s)", "Build (s)", "mpfree (s)", "Speedup"),
-      align = c("l", rep("r", 6))) %>%
+      align = c("l", rep("r", 6)),
+  table.envir = "table*", position = "!h") %>%
     kable_styling(latex_options = c("striped", "hold_position"), font_size = 8) %>%
     add_header_above(c(" " = 1,
                         "No preprocessing" = 2,
                        # "Filtration-domination" = 4,
                        "With our preprocessing" = 4)) %>%
-    cat(., file = "compare_mpfree.tex")
+    cat(., file = "charts/compare_mpfree.tex")
 }
 
 do_multiple_iterations <- function() {
-  multiple_iters_csv <- read.csv(file = "compare_multiple_iterations.csv") %>%
+  multiple_iters_csv <- read.csv(file = "charts/compare_multiple_iterations.csv") %>%
     group_by(Dataset) %>%
     mutate(Ratio = Edges/first(Edges)) %>%
     dplyr::filter(Iteration <= 5)
@@ -306,7 +194,8 @@ do_multiple_iterations <- function() {
       The ``Removed'' column displays the percentage of the original edges removed in the corresponding iteration,
       and ``Time (s)'' displays the running time (in seconds) of the iteration.",
       align = c("l", rep("r", 10)),
-      col.names = c("Dataset", rep(c("Time (s)", "Removed"), 5))) %>%
+      col.names = c("Dataset", rep(c("Time (s)", "Removed"), 5)),
+  table.envir = "table*", position = "!h") %>%
     kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
     add_header_above(c(" " = 1,
                        "Iteration 1" = 2,
@@ -315,28 +204,15 @@ do_multiple_iterations <- function() {
                        "Iteration 4" = 2,
                        "Iteration 5" = 2
                        )) %>%
-    cat(., file = "compare_multiple_iterations.tex")
+    cat(., file = "charts/compare_multiple_iterations.tex")
 }
 
 do_asymptotics <- function() {
-  asymptotics_csv <- read.csv(file = "compare_asymptotics.csv") %>%
+  asymptotics_csv <- read.csv(file = "charts/compare_asymptotics.csv") %>%
     mutate(Ratio = (After / Before) * 100) %>%
     mutate(Vertices = Points * Points)
 
-  spheres <- asymptotics_csv %>%
-    dplyr::filter(Dataset == "sphere") %>%
-    group_by(Dataset, Points)
-    # summarise(Ratio = mean(Ratio))
-    # dplyr::filter(10. <= Ratio & Ratio <= 20.)
-
   asympt_width <- 4
-
-  ggplot(spheres, aes(x = Before, y = Ratio)) +
-    labs(x = "Edges", y = "Time (s)") +
-    geom_point() +
-    geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE)
-
-  ggsave("compare_asymptotics_sphere.pdf", width = asympt_width, height = asympt_width)
 
   ggplot(asymptotics_csv %>%
            dplyr::filter(Dataset == "torus" & Algorithm == "Strong filtration-domination"),
@@ -345,20 +221,10 @@ do_asymptotics <- function() {
     geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
     geom_point()
 
-  ggsave("compare_asymptotics_torus.pdf", width = asympt_width, height = asympt_width)
-
-  ggplot(asymptotics_csv %>%
-           dplyr::filter(Dataset == "torus" & Algorithm == "Filtration-domination"),
-         aes(x = Before, y = Time)) +
-    labs(x = "Edges", y = "Time (s)", title = "Torus") +
-    geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE) +
-    geom_point()
-
-    ggsave("compare_asymptotics_torus_full.pdf", width = asympt_width, height = asympt_width)
+  ggsave("charts/compare_asymptotics_torus.pdf", width = asympt_width, height = asympt_width)
 
   ggplot(asymptotics_csv %>%
            dplyr::filter(Dataset == "uniform" & Algorithm == "Strong filtration-domination"), #%>%
-           # dplyr::filter(Points == 200 | Points == 400 | Points == 800 | Points == 1600 | Points == 3000),
          aes(x = Before, y = Time)) +
     labs(x = "Edges", y = "Time (s)", title = "Uniform") +
     geom_smooth(method = "lm",
@@ -366,19 +232,7 @@ do_asymptotics <- function() {
                 se = FALSE) +
     geom_point()
 
-  ggsave("compare_asymptotics_uniform.pdf", width = asympt_width, height = asympt_width)
-
-  ggplot(asymptotics_csv %>%
-           dplyr::filter(Dataset == "uniform" & Algorithm == "Filtration-domination"), #%>%
-         # dplyr::filter(Points == 200 | Points == 400 | Points == 800 | Points == 1600 | Points == 3000),
-         aes(x = Before, y = Time)) +
-    labs(x = "Edges", y = "Time (s)", title = "Uniform") +
-    geom_smooth(method = "lm",
-                formula = y ~ poly(x, 2),
-                se = FALSE) +
-    geom_point()
-
-  ggsave("compare_asymptotics_uniform_full.pdf", width = asympt_width, height = asympt_width)
+  ggsave("charts/compare_asymptotics_uniform.pdf", width = asympt_width, height = asympt_width)
 }
 
 args <- commandArgs(trailingOnly=TRUE)
@@ -392,15 +246,9 @@ if (command == "orders") {
   do_orders()
 } else if (command == "removal") {
   do_removals()
-} else if (command == "presentation") {
-  do_removals_presentation()
-  do_orders_presentation()
-  do_mpfree_presentation()
-} else if (command == "preliminary") {
-  do_preliminary()
 } else if (command == "mpfree") {
   do_mpfree()
-} else if (command == "multiple_iterations") {
+} else if (command == "multiple-iterations") {
   do_multiple_iterations()
 } else if (command == "asymptotics") {
   do_asymptotics()

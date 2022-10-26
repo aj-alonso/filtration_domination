@@ -12,7 +12,7 @@ pub struct MultipleIterationsCli {
     datasets: Vec<CliDataset>,
 
     /// Number of iterations to run per dataset.
-    #[clap(short, default_value_t = 6)]
+    #[clap(short, default_value_t = 5)]
     iterations: usize,
 }
 

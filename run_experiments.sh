@@ -10,12 +10,23 @@ cargo build --profile release
 cd ..
 
 EXPERIMENT_BIN=./experiment/target/release/experiment
+PROCESS_CHARTS_SCRIPT="Rscript process_charts.r"
 
-#$EXPERIMENT_BIN orders
+DATASETS="senate eleg netwsc hiv dragon sphere uniform circle torus swiss-roll"
 
-#$EXPERIMENT_BIN removal
+# Create output directory if it does not exists
+mkdir -p charts
 
-DATASETS="senate netwsc"
+# Experiment with different orders
+ORDERS="reverse-lexicographic reverse-colexicographic"
+$EXPERIMENT_BIN order $DATASETS $(printf ' -o %s' $ORDERS)
+$PROCESS_CHARTS_SCRIPT orders
+
+# Experiment with different methods
+$EXPERIMENT_BIN removal $DATASETS
+$PROCESS_CHARTS_SCRIPT removal
+
+# mpfree comparison experiments
 MODALITIES="strong-filtration-domination only-mpfree"
 MPFREE_OUT_FILE="charts/compare_mpfree.csv"
 ITER=0
@@ -33,11 +44,14 @@ for dataset in $DATASETS; do
     ITER=$((ITER + 1))
   done
 done
+$PROCESS_CHARTS_SCRIPT mpfree
 
-#$EXPERIMENT_BIN mpfree
+$EXPERIMENT_BIN multiple-iterations $DATASETS
+$PROCESS_CHARTS_SCRIPT multiple-iterations
 
-#$EXPERIMENT_BIN multiple-iterations
+$EXPERIMENT_BIN random-densities $DATASETS
+$PROCESS_CHARTS_SCRIPT random-densities
 
-#$EXPERIMENT_BIN asymptotics
-
-#$EXPERIMENT_BIN random-densities
+ASYMPTOTICS_DATASETS="torus uniform"
+$EXPERIMENT_BIN asymptotics $ASYMPTOTICS_DATASETS -n 200 -i 3 -s 400
+$PROCESS_CHARTS_SCRIPT asymptotics
