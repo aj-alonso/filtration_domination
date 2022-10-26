@@ -94,7 +94,7 @@ fn save_single_parameter_edges<VF: Value>(
     let out_edges_path = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, policy));
 
     let mut out_edges_file = std::fs::File::create(out_edges_path)?;
-    write_edge_list(&edges_no_density, &mut out_edges_file)?;
+    write_edge_list(&edges_no_density, &mut out_edges_file, true)?;
 
     Ok(())
 }

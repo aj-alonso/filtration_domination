@@ -15,7 +15,7 @@ pub fn run_single_parameter_edge_collapse<T: Value + std::fmt::Display>(
     let edges_out_file = "edges.txt";
     {
         let mut out_edges_file = fs::File::create(edges_out_file)?;
-        write_edge_list(edges, &mut out_edges_file)?;
+        write_edge_list(edges, &mut out_edges_file, true)?;
         out_edges_file.sync_data()?;
     }
 

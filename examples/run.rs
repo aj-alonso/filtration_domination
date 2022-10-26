@@ -8,6 +8,9 @@ use filtration_domination::removal::{
 };
 use ordered_float::OrderedFloat;
 use std::fmt::Formatter;
+use std::fs::File;
+use std::io::BufWriter;
+use filtration_domination::edges::write_edge_list;
 
 const HOMOLOGY: usize = 1;
 
@@ -39,6 +42,10 @@ struct RunCli {
     /// Maximum value on the distances.
     #[clap(short, long)]
     threshold: Option<f64>,
+
+    /// Save the input edges (not reduced) to a file.
+    #[clap(long)]
+    export_edges: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -115,6 +122,12 @@ fn main() -> anyhow::Result<()> {
             .map(|b| DensityEstimator::Gaussian(OrderedFloat(b))),
         true,
     )?;
+
+    if let Some(export_path) = opts.export_edges {
+        let export_file = File::create(export_path)?;
+        let mut writer = BufWriter::new(export_file);
+        write_edge_list(&edges, &mut writer, false)?;
+    }
 
     let start = std::time::Instant::now();
     let remaining_edges = if opts.strong {
