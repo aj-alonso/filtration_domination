@@ -1,5 +1,5 @@
 use crate::single_collapse::run_single_parameter_edge_collapse;
-use crate::utils::{delete_densities, forget_densities, normalize};
+use crate::utils::{delete_densities, forget_densities};
 use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
 use clap::Args;
 use filtration_domination::datasets;
@@ -91,8 +91,7 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
             None,
             true,
         )?;
-        let mut single_parameter_edges = delete_densities(&edges);
-        let single_parameter_edges = normalize(&mut single_parameter_edges);
+        let single_parameter_edges = delete_densities(&edges);
 
         let mut zero_density_edges = edges.clone();
         forget_densities(&mut zero_density_edges);

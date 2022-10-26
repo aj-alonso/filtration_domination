@@ -1,5 +1,5 @@
 use filtration_domination::edges::{EdgeList, FilteredEdge};
-use filtration_domination::{CriticalGrade, OneCriticalGrade, Value};
+use filtration_domination::{OneCriticalGrade, Value};
 use rand::distributions::uniform::SampleUniform;
 use rand::distributions::Uniform;
 use rand::Rng;
@@ -42,42 +42,4 @@ pub fn zero_grades<VF: Value>(edge_list: &mut EdgeList<FilteredEdge<OneCriticalG
         edge.grade.0[0] = VF::zero();
         edge.grade.0[1] = VF::zero();
     }
-}
-
-pub fn critical_values<VF: Value, const N: usize>(
-    edges: &mut [FilteredEdge<OneCriticalGrade<VF, N>>],
-) -> Vec<OneCriticalGrade<usize, N>> {
-    let mut critical_values: Vec<OneCriticalGrade<usize, N>> =
-        vec![OneCriticalGrade::min_value(); edges.len()];
-    let mut n_critical_values = [0; N];
-    let mut indexes: Vec<usize> = (0..edges.len()).collect();
-    for (n, critical_value_counter) in n_critical_values.iter_mut().enumerate() {
-        // Sort on the n-th grade component.
-        indexes.sort_by(|&a_idx, &b_idx| edges[a_idx].grade[n].cmp(&edges[b_idx].grade[n]));
-        for (i, &idx) in indexes.iter().enumerate() {
-            if i != 0 {
-                let prev_idx = indexes[i - 1];
-                if edges[prev_idx].grade[n] != edges[idx].grade[n] {
-                    *critical_value_counter += 1;
-                }
-            }
-            critical_values[idx][n] = *critical_value_counter;
-        }
-    }
-    critical_values
-}
-
-pub fn normalize<VF: Value, const N: usize>(
-    edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, N>>>,
-) -> EdgeList<FilteredEdge<OneCriticalGrade<usize, N>>> {
-    let edges = edge_list.edges_mut();
-    let critical = critical_values(edges);
-    let mut new_edges = Vec::with_capacity(edges.len());
-    for (i, e) in edges.iter().enumerate() {
-        new_edges.push(FilteredEdge {
-            grade: critical[i],
-            edge: e.edge,
-        });
-    }
-    new_edges.into()
 }

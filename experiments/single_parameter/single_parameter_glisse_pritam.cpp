@@ -328,11 +328,11 @@ int main(int argc, char** argv) {
 	std::ifstream in(argv[1], std::ios_base::in);
 
 	int n_edges;
-	std::vector<std::tuple<uu, uu, uu>> edges;
+	std::vector<std::tuple<uu, uu, double>> edges;
 
 	in >> n_edges;
 	for (int i = 0; i < n_edges; i++) {
-		std::tuple<uu, uu, uu> e;
+		std::tuple<uu, uu, double> e;
 		in >> std::get<0>(e) >> std::get<1>(e) >> std::get<2>(e);
 		edges.push_back(e);
 	}
