@@ -18,6 +18,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::time::Duration;
+use crate::experiments::multiple_iterations::{compare_multiple_iterations, MultipleIterationsCli};
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
 
@@ -33,6 +34,7 @@ enum ExperimentCli {
     Removal(RemovalCli),
     Mpfree(MpfreeCli),
     Asymptotics(AsymptoticCli),
+    MultipleIterations(MultipleIterationsCli)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -170,6 +172,9 @@ fn main() -> anyhow::Result<()> {
         }
         ExperimentCli::Asymptotics(opts) => {
             compare_asymptotics(opts)?;
+        }
+        ExperimentCli::MultipleIterations(opts) => {
+            compare_multiple_iterations(opts)?;
         }
     }
 
