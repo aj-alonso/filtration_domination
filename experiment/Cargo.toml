@@ -1,0 +1,10 @@
+[package]
+name = "experiment"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.58"
+clap = { version = "3.2.11", features = ["derive"] }
+filtration-domination = {path = "../"}
+thiserror = "1.0.31"
