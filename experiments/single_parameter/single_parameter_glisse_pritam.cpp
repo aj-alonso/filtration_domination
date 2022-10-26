@@ -5,7 +5,7 @@
 
 #include "Flag_complex_edge_collapser.h"
 
-using uu = unsigned long int;
+using uu = long int;
 
 void write_edges(const std::vector<std::tuple<uu, uu, double> > &edges) {
   std::ofstream out("edges_out.txt");
