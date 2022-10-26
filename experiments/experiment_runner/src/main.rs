@@ -107,18 +107,22 @@ impl CliDataset {
 
 impl std::fmt::Display for CliDataset {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            CliDataset::Senate => "senate",
-            CliDataset::Eleg => "eleg",
-            CliDataset::Netwsc => "netwsc",
-            CliDataset::Hiv => "hiv",
-            CliDataset::Dragon => "dragon",
-            CliDataset::Uniform => "uniform",
-            CliDataset::Sphere => "sphere",
-            CliDataset::Circle => "circle",
-            CliDataset::Torus => "torus",
-            CliDataset::SwissRoll => "swiss-roll",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                CliDataset::Senate => "senate",
+                CliDataset::Eleg => "eleg",
+                CliDataset::Netwsc => "netwsc",
+                CliDataset::Hiv => "hiv",
+                CliDataset::Dragon => "dragon",
+                CliDataset::Uniform => "uniform",
+                CliDataset::Sphere => "sphere",
+                CliDataset::Circle => "circle",
+                CliDataset::Torus => "torus",
+                CliDataset::SwissRoll => "swiss-roll",
+            }
+        )
     }
 }
 

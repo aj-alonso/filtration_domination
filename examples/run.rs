@@ -2,6 +2,7 @@ use clap::Parser;
 use filtration_domination::datasets;
 use filtration_domination::datasets::Threshold;
 use filtration_domination::distance_matrix::density_estimation::DensityEstimator;
+use filtration_domination::edges::write_edge_list;
 use filtration_domination::mpfree::compute_minimal_presentation;
 use filtration_domination::removal::{
     remove_filtration_dominated, remove_strongly_filtration_dominated, EdgeOrder,
@@ -10,7 +11,6 @@ use ordered_float::OrderedFloat;
 use std::fmt::Formatter;
 use std::fs::File;
 use std::io::BufWriter;
-use filtration_domination::edges::write_edge_list;
 
 const HOMOLOGY: usize = 1;
 

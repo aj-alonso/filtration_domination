@@ -2,14 +2,14 @@ use crate::single_collapse::run_single_parameter_edge_collapse;
 use crate::utils::{delete_densities, forget_densities};
 use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
 use clap::Args;
-use filtration_domination::{datasets, OneCriticalGrade, Value};
 use filtration_domination::datasets::Threshold;
+use filtration_domination::edges::{write_edge_list, EdgeList, FilteredEdge};
 use filtration_domination::removal::{
     remove_filtration_dominated, remove_strongly_filtration_dominated, EdgeOrder,
 };
+use filtration_domination::{datasets, OneCriticalGrade, Value};
 use std::fmt::{Display, Formatter};
 use std::time::Duration;
-use filtration_domination::edges::{EdgeList, FilteredEdge, write_edge_list};
 
 const TMP_DIRECTORY: &str = "tmp";
 
@@ -23,7 +23,7 @@ pub struct RemovalCli {
 
     #[clap(long)]
     /// On the single-parameter algorithms, whether to save the reduced list of edges to disk.
-    save_single_parameter_edges: bool
+    save_single_parameter_edges: bool,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -42,7 +42,9 @@ impl Display for RemovalPolicy {
             RemovalPolicy::StrongFiltrationDomination => write!(f, "strong-filtration-domination"),
             RemovalPolicy::FiltrationDomination => write!(f, "filtration-domination"),
             RemovalPolicy::SingleParameter => write!(f, "single-parameter"),
-            RemovalPolicy::StrongFiltrationDominationSingle => write!(f, "strong-filtration-domination-single"),
+            RemovalPolicy::StrongFiltrationDominationSingle => {
+                write!(f, "strong-filtration-domination-single")
+            }
             RemovalPolicy::FiltrationDominationSingle => write!(f, "filtration-domination-single"),
         }
     }
@@ -85,13 +87,14 @@ impl Row for RemovalRow {
 fn save_single_parameter_edges<VF: Value>(
     edges: &EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>,
     dataset: CliDataset,
-    policy: RemovalPolicy
+    policy: RemovalPolicy,
 ) -> anyhow::Result<()> {
     let edges_no_density = delete_densities(edges);
 
     let directory = std::path::Path::new(TMP_DIRECTORY);
     std::fs::create_dir_all(&directory)?;
-    let out_edges_path = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, policy));
+    let out_edges_path =
+        directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, policy));
 
     let mut out_edges_file = std::fs::File::create(out_edges_path)?;
     write_edge_list(&edges_no_density, &mut out_edges_file, true)?;
@@ -152,7 +155,8 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
                         // HACK: the single parameter utility outputs the resulting edges to edges_out.txt.
                         let directory = std::path::Path::new(TMP_DIRECTORY);
                         std::fs::create_dir_all(&directory)?;
-                        let result_edges_out_file = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, policy));
+                        let result_edges_out_file = directory
+                            .join(format!("single_parameter_edges_{}_{}.txt", dataset, policy));
                         std::fs::copy("edges_out.txt", result_edges_out_file)?;
                     }
 

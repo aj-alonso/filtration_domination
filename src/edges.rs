@@ -1,4 +1,5 @@
 //! Edges, edge lists, and associated functions.
+use crate::io_utils::parse_next;
 use crate::{CriticalGrade, OneCriticalGrade, Value};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
@@ -6,7 +7,6 @@ use std::cmp::{max, Ordering};
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::io::BufRead;
-use crate::io_utils::parse_next;
 
 /// Common functionality of an undirected edge. See [BareEdge] and [FilteredEdge].
 pub trait Edge {
@@ -298,7 +298,7 @@ impl<E: Edge> From<Vec<E>> for EdgeList<E> {
 pub fn write_edge_list<T: Value + Display, W: std::io::Write, const N: usize>(
     edges: &EdgeList<FilteredEdge<OneCriticalGrade<T, N>>>,
     writer: &mut W,
-    write_number: bool
+    write_number: bool,
 ) -> std::io::Result<()> {
     if write_number {
         writeln!(writer, "{}", edges.len())?;
@@ -317,7 +317,8 @@ pub fn write_edge_list<T: Value + Display, W: std::io::Write, const N: usize>(
 
 pub fn read_edge_list<T: Value + std::str::FromStr, R: std::io::Read, const N: usize>(
     reader: std::io::BufReader<R>,
-) -> std::io::Result<EdgeList<FilteredEdge<OneCriticalGrade<T, N>>>> where
+) -> std::io::Result<EdgeList<FilteredEdge<OneCriticalGrade<T, N>>>>
+where
     <T as std::str::FromStr>::Err: std::error::Error + Send + Sync + 'static,
 {
     let mut edge_list = EdgeList::new(0);
@@ -334,7 +335,7 @@ pub fn read_edge_list<T: Value + std::str::FromStr, R: std::io::Read, const N: u
 
         edge_list.add_edge(FilteredEdge {
             grade,
-            edge: BareEdge(u, v)
+            edge: BareEdge(u, v),
         });
     }
     Ok(edge_list)
