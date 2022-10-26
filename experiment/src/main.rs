@@ -17,6 +17,7 @@ use crate::experiments::multiple_iterations::{compare_multiple_iterations, Multi
 use crate::experiments::random_densities::{compare_random_densities, RandomDensitiesCli};
 use crate::experiments::removals::{compare_removals, RemovalCli};
 use std::fmt::Formatter;
+use std::fs;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
@@ -146,6 +147,7 @@ impl std::fmt::Display for Algorithm {
 
 fn save_table<R: Row>(table: Table<R>, name: &str) -> anyhow::Result<()> {
     let out_dir = Path::new(TABLE_OUTPUT_DIRECTORY);
+    fs::create_dir_all(out_dir)?;
     let out_base_file = out_dir.join(name);
 
     let csv_file = File::create(&out_base_file.with_extension("csv"))?;

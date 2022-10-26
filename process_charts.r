@@ -72,7 +72,7 @@ do_removals <- function() {
                     "After", "Time (s)",# "+par (s)",
                     "After", "Time (s)"),
       table.envir = "table*") %>%
-    kable_styling(latex_options = c("striped", "scale_down", "hold_position")) %>%
+    kable_styling(latex_options = c("striped", "hold_position")) %>%
     add_header_above(c(" " = 2, "Filtration-domination" = 2, "Strong filtration-domination" = 2, "Single-parameter" = 2)) %>%
     cat(., file = "charts/compare_removal.tex")
 }
@@ -122,11 +122,11 @@ format_kilobytes <- function(kb) {
   gb <- kb/1024.0 ^ 2
 
   if (gb > 1) {
-    formatted <- paste0(round(gb, 2), "GB")
+    formatted <- paste0(round(gb, 2), " GB")
   } else if (mb > 1) {
-    formatted <- paste0(round(mb, 2), "MB")
+    formatted <- paste0(round(mb, 2), " MB")
   } else{
-    formatted <- paste0(round(kb, 2), "KB")
+    formatted <- paste0(round(kb, 2), " KB")
   }
 
   return(formatted)
@@ -142,22 +142,21 @@ do_mpfree <- function() {
     mutate(Total = sum(c(Collapse, Build, Mpfree), na.rm = TRUE))
 
   speedup_df <- mpfree_csv %>%
+    mutate(Memory = mapply(format_kilobytes, Memory)) %>%
     group_by(Dataset) %>%
     arrange(Modality, .by_group = T) %>%
     mutate(Speedup = first(Total)/Total) %>%
-    mutate(Speedup = replace(Speedup, Speedup == 1, NA)) %>%
     mutate(Speedup = replace(Speedup, Speedup == 0., NA)) %>%
-    mutate(Memory = if_else(is.na(Speedup), "$\\infty$", mapply(format_kilobytes, Memory))) %>%
     mutate(Speedup = if_else(is.na(Speedup), "---", format(round(Speedup, 2), nsmall = 2)))
 
   options(knitr.kable.NA = '---')
   hor_table <- speedup_df %>%
-    select(Dataset, Points, Before, Modality, After, Collapse, Build, Mpfree, Speedup) %>%
-    pivot_wider(names_from = Modality, values_from = c(Collapse, After, Build, Mpfree, Speedup)) %>%
+    select(Dataset, Points, Before, Modality, After, Collapse, Build, Mpfree, Speedup, Memory) %>%
+    pivot_wider(names_from = Modality, values_from = c(Collapse, After, Build, Mpfree, Speedup, Memory)) %>%
+    mutate(`Memory_only-mpfree` = if_else(`Speedup_strong-filtration-domination` == "---", "$\\infty$", `Memory_only-mpfree`)) %>%
     select(Dataset,
-           "Build_only-mpfree", "Mpfree_only-mpfree",
-           # "Collapse_Collapse", "Build_Collapse", "Mpfree_Collapse", "Speedup_Collapse",
-           "Collapse_strong-filtration-domination", "Build_strong-filtration-domination", "Mpfree_strong-filtration-domination", "Speedup_strong-filtration-domination")
+           "Memory_only-mpfree", "Build_only-mpfree", "Mpfree_only-mpfree",
+           "Memory_strong-filtration-domination", "Collapse_strong-filtration-domination", "Build_strong-filtration-domination", "Mpfree_strong-filtration-domination", "Speedup_strong-filtration-domination")
   kbl(hor_table, "latex",
       digits = 2,
       escape = FALSE,
@@ -168,12 +167,11 @@ do_mpfree <- function() {
       In addition, the ``Preprocessing (s)'' column displays the time taken to run our algorithm, and ``Speedup'' is the speedup compared to not doing preprocessing. $\\infty$ means
       that the algorithm ran out of memory during the execution.",
       col.names = c("Dataset",
-                    "Build (s)", "mpfree (s)",
-                    # "Removal (s)", "Build (s)", "mpfree (s)", "Speedup",
-                    "Removal (s)", "Build (s)", "mpfree (s)", "Speedup"),
+                    "Memory", "Build (s)", "mpfree (s)",
+                    "Memory", "Removal (s)", "Build (s)", "mpfree (s)", "Speedup"),
       align = c("l", rep("r", 6)),
   table.envir = "table*", position = "!h") %>%
-    kable_styling(latex_options = c("striped", "hold_position"), font_size = 8) %>%
+    kable_styling(latex_options = c("striped", "hold_position")) %>%
     add_header_above(c(" " = 1,
                         "No preprocessing" = 2,
                        # "Filtration-domination" = 4,
