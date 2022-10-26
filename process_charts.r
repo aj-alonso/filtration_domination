@@ -117,6 +117,22 @@ do_random_densities <- function() {
     cat(., file = "charts/compare_random_densities.tex")
 }
 
+format_kilobytes <- function(size_kb) {
+  mb <- size_kb/1024.0
+  gb <- size_kb/1024.0 ^ 2
+
+  print(gb)
+  if (gb > 1) {
+    formatted <- paste0(round(g, 2), "GB")
+  } else if (mb > 1) {
+    formatted <- paste0(round(m, 2), "MB")
+  } else{
+    formatted <- paste0(round(size_kb, 2), "B")
+  }
+
+  return(formatted)
+}
+
 do_mpfree <- function() {
   mpfree_csv <- read.csv(file = "charts/compare_mpfree.csv", na.strings = c("NA", "-")) %>%
     mutate(Modality = factor(Modality, c("only-mpfree", "filtration-domination", "strong-filtration-domination"))) %>%
@@ -132,9 +148,10 @@ do_mpfree <- function() {
     mutate(Speedup = first(Total)/Total) %>%
     mutate(Speedup = replace(Speedup, Speedup == 1, NA)) %>%
     mutate(Speedup = replace(Speedup, Speedup == 0., NA)) %>%
+    mutate(Memory = if_else(is.na(Speedup), "$\\infty$", format_kilobytes(Memory))) %>%
     mutate(Speedup = if_else(is.na(Speedup), "---", format(round(Speedup, 2), nsmall = 2)))
 
-  options(knitr.kable.NA = '$\\infty$')
+  options(knitr.kable.NA = '---')
   hor_table <- speedup_df %>%
     select(Dataset, Points, Before, Modality, After, Collapse, Build, Mpfree, Speedup) %>%
     pivot_wider(names_from = Modality, values_from = c(Collapse, After, Build, Mpfree, Speedup)) %>%

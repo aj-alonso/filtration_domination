@@ -29,9 +29,9 @@ enum RemovalPolicy {
 impl Display for RemovalPolicy {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            RemovalPolicy::StrongFiltrationDomination => write!(f, "Single Vertex"),
-            RemovalPolicy::FiltrationDomination => write!(f, "Geom"),
-            RemovalPolicy::SingleParameter => write!(f, "Glisse"),
+            RemovalPolicy::StrongFiltrationDomination => write!(f, "strong-filtration-domination"),
+            RemovalPolicy::FiltrationDomination => write!(f, "filtration-domination"),
+            RemovalPolicy::SingleParameter => write!(f, "single-parameter"),
         }
     }
 }

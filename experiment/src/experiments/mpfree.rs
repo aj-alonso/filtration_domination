@@ -22,7 +22,7 @@ use crate::memory_usage::{get_maximum_memory_usage, Kilobytes, Resource};
 const HOMOLOGY: usize = 1;
 
 const GIGABYTE: u64 = 1_000_000_000;
-const MAXIMUM_MEMORY_BYTES: u64 = 60 * GIGABYTE;
+const MAXIMUM_MEMORY_BYTES: u64 = 50 * GIGABYTE;
 
 #[derive(Debug, Args)]
 pub struct MpfreeCli {
