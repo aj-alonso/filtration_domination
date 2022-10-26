@@ -24,7 +24,10 @@ fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>
 where
     S: for<'a> SimplicialComplex<'a>,
 {
-    build_flag_filtration_with_check::<_, _, _, EmptyError, fn(usize)-> Result<(), EmptyError>>(vertices, max_dim, edges, None).unwrap()
+    build_flag_filtration_with_check::<_, _, _, EmptyError, fn(usize) -> Result<(), EmptyError>>(
+        vertices, max_dim, edges, None,
+    )
+    .unwrap()
 }
 
 pub fn build_flag_filtration_with_check<
@@ -32,7 +35,7 @@ pub fn build_flag_filtration_with_check<
     S,
     I: Iterator<Item = FilteredEdge<G>>,
     E: StdError,
-    F: Fn(usize) -> Result<(), E>
+    F: Fn(usize) -> Result<(), E>,
 >(
     vertices: usize,
     max_dim: usize,

@@ -28,14 +28,14 @@ fn [<$name _remove>]() {
     println!("Remaining edges: {}", remaining_edges.len());
 
     let mpfree_all_edges =
-        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).unwrap();
+        compute_minimal_presentation(&format!("test_mpfree_{}", stringify!($name)), HOMOLOGY, &edges).expect("Computing minimal presentation on all edges");
 
     let mpfree_remaining = compute_minimal_presentation(
         &format!("test_mpfree_{}_remaining", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
-    .unwrap();
+    .expect("Computing minimal presentation on remaining edges");
 
     assert_eq!(mpfree_remaining.output, mpfree_all_edges.output);
 }
@@ -54,14 +54,14 @@ fn [<$name _remove_strong>]() {
     println!("Remaining edges: {}", remaining_edges.len());
 
     let mpfree_all_edges =
-        compute_minimal_presentation(&format!("test_mpfree_{}_strong", stringify!($name)), HOMOLOGY, &edges).unwrap();
+        compute_minimal_presentation(&format!("test_mpfree_{}_strong", stringify!($name)), HOMOLOGY, &edges).expect("Computing minimal presentation on all edges");
 
     let mpfree_remaining = compute_minimal_presentation(
         &format!("test_mpfree_{}_strong_remaining", stringify!($name)),
         HOMOLOGY,
         &remaining_edges,
     )
-    .unwrap();
+    .expect("Computing minimal presentation on remaining edges");
 
     assert_eq!(mpfree_remaining.output, mpfree_all_edges.output);
 }

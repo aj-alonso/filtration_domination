@@ -49,9 +49,12 @@ pub fn compute_minimal_presentation<VF: Value, G: CriticalGrade>(
 where
     Filtration<G, MapSimplicialComplex>: ToFreeImplicitRepresentation<VF, 2>,
 {
-    let result = compute_minimal_presentation_with_check::<_, _, std::io::Error, fn(usize) -> Result<(), io::Error>>(
-        name, homology, edge_list, None,
-    );
+    let result = compute_minimal_presentation_with_check::<
+        _,
+        _,
+        std::io::Error,
+        fn(usize) -> Result<(), io::Error>,
+    >(name, homology, edge_list, None);
     match result {
         Ok(summary) => Ok(summary),
         Err(err) => match err {
@@ -76,7 +79,12 @@ pub enum CheckedMpfreeError<E> {
 /// of the given bifiltered edge list.
 ///
 /// The `name` parameter is used to name and identify temporary files.
-pub fn compute_minimal_presentation_with_check<VF: Value, G: CriticalGrade, E: std::error::Error, F: Fn(usize) -> Result<(), E>>(
+pub fn compute_minimal_presentation_with_check<
+    VF: Value,
+    G: CriticalGrade,
+    E: std::error::Error,
+    F: Fn(usize) -> Result<(), E>,
+>(
     name: &str,
     homology: usize,
     edge_list: &EdgeList<FilteredEdge<G>>,
@@ -101,10 +109,10 @@ where
     // Save filtration to disk.
     let start_io = std::time::Instant::now();
     let directory = Path::new(TMP_DIRECTORY);
-    fs::create_dir_all(&directory).map_err(MpfreeError::Io)?;
+    fs::create_dir_all(&directory).map_err(MpfreeError::CreateTmpDirectory)?;
     let filepath_mpfree_input = directory.join(format!("{}_scc2020", name));
     let filepath_out = filepath_mpfree_input.with_extension("out");
-    write_bifiltration(&filepath_mpfree_input, homology, &filtration).unwrap();
+    write_bifiltration(&filepath_mpfree_input, homology, &filtration).map_err(MpfreeError::Io)?;
     timers.write_bifiltration = start_io.elapsed();
 
     // Compute minimal presentation.
@@ -143,7 +151,16 @@ pub enum MpfreeError {
     #[error("Error parsing Betti numbers")]
     ParsingBettiNumbers,
 
-    #[error("IO error running mpfree: {0}")]
+    #[error("Spawning mpfree process. Is mpfree installed?")]
+    SpawnMpfree(#[source] io::Error),
+
+    #[error("Creating tmp directory")]
+    CreateTmpDirectory(#[source] io::Error),
+
+    #[error("Processing mpfree output file")]
+    OutputFile(#[source] io::Error),
+
+    #[error("A unknown IO error happened")]
     Io(#[from] io::Error),
 
     #[error("Error parsing number: {0}")]
@@ -160,13 +177,14 @@ pub fn run_mpfree<P: AsRef<Path>>(
             filepath_out.as_ref().as_os_str(),
         ])
         .stdout(Stdio::null())
-        .spawn()?;
+        .spawn()
+        .map_err(MpfreeError::SpawnMpfree)?;
     let exit_code = child.wait()?;
     if !exit_code.success() {
         return Err(MpfreeError::ExitStatus(exit_code));
     }
 
-    let output_file = File::open(filepath_out.as_ref())?;
+    let output_file = File::open(filepath_out.as_ref()).map_err(MpfreeError::OutputFile)?;
     let mut child_stdout = BufReader::new(output_file);
     let mut buffer = String::new();
     child_stdout.read_line(&mut buffer)?;
