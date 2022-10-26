@@ -4,7 +4,7 @@ use num::Zero;
 use std::cmp::max;
 
 use crate::edges::{BareEdge, FilteredEdge};
-use crate::{OneCriticalGrade, Value};
+use crate::OneCriticalGrade;
 
 pub mod density_estimation;
 pub mod input;
@@ -56,6 +56,12 @@ impl<T> DistanceMatrix<T> {
         let (new_u, new_v) = max_min(u, v);
         &self.distances[new_u][new_v]
     }
+
+    /// Returns an iterator that goes through all edges on the complete graph associated to
+    /// this distance matrix.
+    pub fn edges(&self) -> EdgeIterator<'_, T> {
+        EdgeIterator::new(self)
+    }
 }
 
 impl<T: Zero + Clone + Ord> DistanceMatrix<T> {
@@ -87,14 +93,6 @@ impl<T: Zero + Clone + Ord> DistanceMatrix<T> {
     }
 }
 
-impl<T: Value> DistanceMatrix<T> {
-    /// Returns an iterator that goes through all edges on the complete graph associated to
-    /// this distance matrix.
-    pub fn edges(&self) -> EdgeIterator<'_, T> {
-        EdgeIterator::new(self)
-    }
-}
-
 /// Iterator that outputs the edges on the complete graph associated to a distance matrix.
 /// See [DistanceMatrix::edges].
 pub struct EdgeIterator<'a, T> {
@@ -102,7 +100,7 @@ pub struct EdgeIterator<'a, T> {
     current_edge: BareEdge,
 }
 
-impl<'a, T: Value> EdgeIterator<'a, T> {
+impl<'a, T> EdgeIterator<'a, T> {
     fn new(matrix: &DistanceMatrix<T>) -> EdgeIterator<T> {
         EdgeIterator {
             matrix,
@@ -121,7 +119,7 @@ impl<'a, T: Value> EdgeIterator<'a, T> {
     }
 }
 
-impl<'a, T: Value> Iterator for EdgeIterator<'a, T> {
+impl<'a, T: Copy> Iterator for EdgeIterator<'a, T> {
     type Item = FilteredEdge<OneCriticalGrade<T, 1>>;
 
     fn next(&mut self) -> Option<Self::Item> {
