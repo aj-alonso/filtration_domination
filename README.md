@@ -37,19 +37,52 @@ list of edges.
 ## Tests
 
 The test suite has been tested in GNU/Linux.
-It requires that the [mpfree](https://bitbucket.org/mkerber/mpfree/src/master/) executable is found somewhere along the PATH.
-The test suite also expects that the datasets are available in the `datasets` directory.
-Use the provided script `download_datasets.sh` (by executing from the root directory) to download them.
 
-You can run the tests with
-```shell
-cargo test --release
+### Install Rust
+
+To compile `filtration-domination` you need to have Rust installed. The easiest
+way to install Rust is through [rustup](https://rustup.rs/). This also
+guarantees that you have a recent enough version.
+
+To install Rust via rustup execute in any directory:
+
+``` shell
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
-Note that the command above will run tests in parallel, which might increase memory consumption.
-To use less memory, you can run the tests sequentially:
+and follow the instructions that appear.
+
+### Install mpfree
+
+The test suite requires to have [mpfree](https://bitbucket.org/mkerber/mpfree/src/master/) installed. To do so you can do the following:
+
+``` shell
+git clone https://bitbucket.org/mkerber/mpfree.git
+cd mpfree
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release .. && make
+```
+
+Then place the resulting `mpfree` executable (in the `build` folder) somewhere
+along your PATH. You can do so, for example, with `sudo cp mpfree
+/usr/local/bin`.
+
+### Run the test suite
+
+Before running the test suite you need to download the required datasets. To do
+so, execute from the root directory of this project the `download_datasets.sh`
+script.
+
+``` shell
+./download_datasets.sh
+```
+
+Finally, you can run the tests with
 ```shell
 cargo test --release -- --test-threads 1
 ```
+This command will execute the tests sequentially to reduce memory usage. If you have enough memory you can do
+`cargo test --release` to do them in parallel.
 
 ### Docker
 

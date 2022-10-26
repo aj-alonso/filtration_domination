@@ -22,12 +22,9 @@ do_orders <- function() {
   order_table <- orders_csv %>%
     select(Dataset, Modality, Order, Ratio) %>%
     mutate(Modality = factor(Modality, c("Filtration-domination", "Strong filtration-domination", ordered = TRUE))) %>%
-    # mutate(Modality = fct_relevel(Modality, "Filtration-domination", "Strong filtration-domination")) %>%
     mutate(Order = factor(Order, c("Rand", "Colex", "Lex", "RevColex", "RevLex"))) %>%
-    # mutate(Order = fct_relevel(Order, "Rand", "Colex", "Lex", "RevColex", "RevLex")) %>%
     mutate(Order = fct_recode(Order, Random = "Rand", Colexicographic = "Colex", Lexicographic = "Lex", "Reverse colex." = "RevColex", "Reverse lex." = "RevLex")) %>%
-    mutate(Dataset = factor(Dataset, c("senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll"))) %>%
-    # mutate(Dataset = fct_relevel(Dataset, "senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss roll")) %>%
+    mutate(Dataset = factor(Dataset, c("senate", "eleg", "netwsc", "hiv", "dragon", "sphere", "uniform", "circle", "torus", "swiss-roll"))) %>%
     arrange(Dataset, Modality, Order) %>%
     filter(Modality == "Filtration-domination") %>%
     group_by(Dataset) %>%
@@ -136,7 +133,7 @@ do_mpfree <- function() {
   mpfree_csv <- read.csv(file = "charts/compare_mpfree.csv", na.strings = c("NA", "-")) %>%
     mutate(Modality = factor(Modality, c("only-mpfree", "filtration-domination", "strong-filtration-domination"))) %>%
     mutate(Dataset = factor(Dataset, c("senate", "eleg", "netwsc", "hiv", "dragon",
-                                 "sphere", "uniform", "circle", "torus", "swiss roll"), ordered = TRUE)) %>%
+                                 "sphere", "uniform", "circle", "torus", "swiss-roll"), ordered = TRUE)) %>%
     arrange(Dataset) %>%
     rowwise() %>%
     mutate(Total = sum(c(Collapse, Build, Mpfree), na.rm = TRUE))
@@ -174,9 +171,8 @@ do_mpfree <- function() {
   table.envir = "table*", position = "!h") %>%
     kable_styling(latex_options = c("striped", "hold_position")) %>%
     add_header_above(c(" " = 1,
-                        "No preprocessing" = 2,
-                       # "Filtration-domination" = 4,
-                       "With our preprocessing" = 4)) %>%
+                        "No preprocessing" = 3,
+                       "With our preprocessing" = 5)) %>%
     cat(., file = "charts/compare_mpfree.tex")
 }
 
@@ -229,8 +225,9 @@ do_asymptotics <- function() {
 
   asympt_width <- 4
 
-  ggplot(asymptotics_csv %>%
-           dplyr::filter(Dataset == "torus" & Algorithm == "Strong filtration-domination"),
+  torus_csv <- asymptotics_csv %>%
+    dplyr::filter(Dataset == "torus" & Algorithm == "Strong filtration-domination")
+  ggplot(torus_csv,
          aes(x = Before, y = Time)) +
     labs(x = "Edges", y = "Time (s)", title = "Torus") +
     geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
@@ -238,8 +235,9 @@ do_asymptotics <- function() {
 
   ggsave("charts/compare_asymptotics_torus.pdf", width = asympt_width, height = asympt_width)
 
-  ggplot(asymptotics_csv %>%
-           dplyr::filter(Dataset == "uniform" & Algorithm == "Strong filtration-domination"), #%>%
+  uniform_csv <- asymptotics_csv %>%
+    dplyr::filter(Dataset == "uniform" & Algorithm == "Strong filtration-domination")
+  ggplot(uniform_csv,
          aes(x = Before, y = Time)) +
     labs(x = "Edges", y = "Time (s)", title = "Uniform") +
     geom_smooth(method = "lm",

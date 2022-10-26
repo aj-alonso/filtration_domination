@@ -31,6 +31,18 @@ To be able to run the experiments you need the following dependencies:
 - The `mpfree` executable somewhere along your PATH.
 - The `single_parameter` executable (found after compiling the code in the `single_parameter` folder) somewhere along your PATH.
 
+To install the `single_parameter` executable:
+
+``` shell
+cd single_parameter
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release .. && make
+```
+Then place the resulting `single_parameter` executable (in the `build` folder) somewhere
+along your PATH. You can do so, for example, with `sudo cp single_parameter
+/usr/local/bin`.
+
 After that, you can compile `experiment_runner`:
 
 ``` shell
@@ -39,7 +51,8 @@ cargo build --release
 ```
 
 Place the resulting executable, found in
-`experiment_runner/target/release/experiment_runner` somewhere along your PATH.
+`experiment_runner/target/release/experiment_runner` somewhere along your PATH,
+e.g. `sudo cp experiment_runner/target/release/experiment_runner /usr/local/bin`.
 
 Also, download the datasets here too by executing from the `experiments` directory the following:
 
