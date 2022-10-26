@@ -41,7 +41,7 @@ do_orders <- function() {
       label = "order",
       caption = "Comparison of the edges removed when using different orders.
       For each dataset and order, we show the percentage of removed edges after a single run of the filtration-domination removal algorithm.
-      The cases where the algorithm took more than 2 hours are marked with an ---.",
+      The cases where the algorithm took more than 2 hours are marked with an ``---''.",
       align = c("l", rep("r", 10)),
       table.envir = "table*",
       position = "!h"
@@ -59,9 +59,9 @@ do_removals <- function() {
     pivot_wider(names_from = Policy, values_from = c(After, Time))
   main_selected <- main %>%
     select(Dataset, Before,
-           "After_Geom", "Time_Geom",# "Time_Geom Par",
-           "After_Single Vertex", "Time_Single Vertex",# "Time_Single Vertex Par",
-           "After_Glisse", "Time_Glisse")
+           "After_filtration-domination", "Time_filtration-domination",
+           "After_strong-filtration-domination", "Time_strong-filtration-domination",
+           "After_single-parameter", "Time_single-parameter")
   kbl(main_selected, "latex",
       booktabs = T,
       label = "removals",
@@ -164,8 +164,9 @@ do_mpfree <- function() {
       label = "mpfree",
       caption = "Impact of our algorithm as a preprocessing step for minimal presentations.
       Inside each group of columns, the ``Build (s)'' column displays the time taken in seconds to build the clique bifiltration, and ``mpfree (s)'' the time taken to run \\texttt{mpfree}.
-      In addition, the ``Preprocessing (s)'' column displays the time taken to run our algorithm, and ``Speedup'' is the speedup compared to not doing preprocessing. $\\infty$ means
-      that the algorithm ran out of memory during the execution.",
+      In addition, the ``Preprocessing (s)'' column displays the time taken to run our algorithm, and ``Speedup'' is the speedup compared to not doing preprocessing. The $\\infty$ symbol means
+      that the pipeline ran out of memory, and in that
+      case both the timing and speedup values are marked with an ``---''.",
       col.names = c("Dataset",
                     "Memory", "Build (s)", "mpfree (s)",
                     "Memory", "Removal (s)", "Build (s)", "mpfree (s)", "Speedup"),
