@@ -9,7 +9,6 @@ explanation of these terms, and a description of the algorithms, are in the
 paper
 
 "Filtration-Domination in Bifiltered Graphs"
-by Ángel Javier Alonso, Michael Kerber, and Siddharth Pritam.
 
 The code also includes utilities to handle bifiltered graphs, compute its clique
 complexes, and run mpfree. See the documentation below.
