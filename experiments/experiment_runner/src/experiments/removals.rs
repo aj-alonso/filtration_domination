@@ -9,6 +9,7 @@ use filtration_domination::removal::{
 };
 use std::fmt::{Display, Formatter};
 use std::time::Duration;
+use filtration_domination::edges::write_edge_list;
 
 #[derive(Debug, Args)]
 pub struct RemovalCli {
@@ -24,6 +25,9 @@ enum RemovalPolicy {
     StrongFiltrationDomination,
     FiltrationDomination,
     SingleParameter,
+
+    StrongFiltrationDominationSingle,
+    FiltrationDominationSingle,
 }
 
 impl Display for RemovalPolicy {
@@ -32,6 +36,8 @@ impl Display for RemovalPolicy {
             RemovalPolicy::StrongFiltrationDomination => write!(f, "strong-filtration-domination"),
             RemovalPolicy::FiltrationDomination => write!(f, "filtration-domination"),
             RemovalPolicy::SingleParameter => write!(f, "single-parameter"),
+            RemovalPolicy::StrongFiltrationDominationSingle => write!(f, "strong-filtration-domination-single"),
+            RemovalPolicy::FiltrationDominationSingle => write!(f, "filtration-domination-single"),
         }
     }
 }
@@ -40,6 +46,7 @@ const ALL_REMOVAL_POLICIES: [RemovalPolicy; 3] = [
     RemovalPolicy::StrongFiltrationDomination,
     RemovalPolicy::FiltrationDomination,
     RemovalPolicy::SingleParameter,
+    // By default we do not do the single parameter variants of (strong) filtration domination.
 ];
 
 #[derive(Debug)]
@@ -116,7 +123,57 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
                     (resulting_edges.len(), start.elapsed())
                 }
                 RemovalPolicy::SingleParameter => {
-                    run_single_parameter_edge_collapse(&single_parameter_edges)?
+                    let directory = std::path::Path::new("tmp");
+                    let edges_out_file = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, "orig"));
+                    {
+                        let mut out_edges_file = std::fs::File::create(edges_out_file)?;
+                        write_edge_list(&single_parameter_edges, &mut out_edges_file)?;
+                        out_edges_file.sync_data()?;
+                    }
+
+                    let result = run_single_parameter_edge_collapse(&single_parameter_edges)?;
+
+                    // HACK: the single parameter utility outputs the resulting edges to edges_out.txt.
+                    let result_edges_out_file = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, "single_param"));
+                    std::fs::copy("edges_out.txt", result_edges_out_file)?;
+
+                    result
+                }
+                RemovalPolicy::StrongFiltrationDominationSingle => {
+                    let start = std::time::Instant::now();
+                    let resulting_edges = remove_strongly_filtration_dominated(
+                        &mut zero_density_edges,
+                        EdgeOrder::ReverseLexicographic,
+                    );
+
+                    let resulting_edges_no_density = delete_densities(&resulting_edges);
+                    let directory = std::path::Path::new("tmp");
+                    let edges_out_file = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, "strong_filt"));
+                    {
+                        let mut out_edges_file = std::fs::File::create(edges_out_file)?;
+                        write_edge_list(&resulting_edges_no_density, &mut out_edges_file)?;
+                        out_edges_file.sync_data()?;
+                    }
+
+                    (resulting_edges.len(), start.elapsed())
+                }
+                RemovalPolicy::FiltrationDominationSingle => {
+                    let start = std::time::Instant::now();
+                    let resulting_edges = remove_filtration_dominated(
+                        &mut zero_density_edges,
+                        EdgeOrder::ReverseLexicographic,
+                    );
+
+                    let resulting_edges_no_density = delete_densities(&resulting_edges);
+                    let directory = std::path::Path::new("tmp");
+                    let edges_out_file = directory.join(format!("single_parameter_edges_{}_{}.txt", dataset, "filt"));
+                    {
+                        let mut out_edges_file = std::fs::File::create(edges_out_file)?;
+                        write_edge_list(&resulting_edges_no_density, &mut out_edges_file)?;
+                        out_edges_file.sync_data()?;
+                    }
+
+                    (resulting_edges.len(), start.elapsed())
                 }
             };
 
