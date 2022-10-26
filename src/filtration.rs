@@ -1,18 +1,37 @@
 use sorted_iter::assume::AssumeSortedByItemExt;
 use sorted_iter::SortedIterator;
 use std::collections::BTreeSet;
-use std::error::Error;
+use std::error::Error as StdError;
+use thiserror::Error;
 
 use crate::chain_complex::{ChainComplex, Column, GradedMatrix, ToFreeImplicitRepresentation};
 use crate::edges::{BareEdge, FilteredEdge};
 use crate::simplicial_complex::{is_sorted, Dimension, SimplicialComplex, Vertex};
 use crate::{CriticalGrade, OneCriticalGrade, Value};
 
+#[derive(Error, Debug)]
+enum EmptyError {}
+
+/// Build a flag multi-filtration from an iterator of multi-filtered edges.
+/// The iterator does not need to be sorted.
+/// The resulting multi-filtration is 1-critical.
+#[allow(dead_code)]
+fn build_flag_filtration<G: CriticalGrade, S, I: Iterator<Item = FilteredEdge<G>>>(
+    vertices: usize,
+    max_dim: usize,
+    edges: I,
+) -> Filtration<G, S>
+where
+    S: for<'a> SimplicialComplex<'a>,
+{
+    build_flag_filtration_with_check::<_, _, _, EmptyError>(vertices, max_dim, edges, None).unwrap()
+}
+
 pub fn build_flag_filtration_with_check<
     G: CriticalGrade,
     S,
-    E: Error,
     I: Iterator<Item = FilteredEdge<G>>,
+    E: StdError,
 >(
     vertices: usize,
     max_dim: usize,

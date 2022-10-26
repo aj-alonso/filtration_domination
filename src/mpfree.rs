@@ -178,7 +178,7 @@ pub fn run_mpfree<P: AsRef<Path>>(
     let parameters: usize = buffer.trim().parse()?;
     buffer.clear();
     child_stdout.read_line(&mut buffer)?;
-    let mut sizes_raw = buffer.trim().split_whitespace();
+    let mut sizes_raw = buffer.split_whitespace();
     let mut sizes: [usize; 3] = [0, 0, 0];
     for s in sizes.iter_mut() {
         *s = sizes_raw
