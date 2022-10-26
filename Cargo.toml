@@ -1,10 +1,12 @@
 [package]
 name = "filtration-domination"
 authors = ["Ángel Javier Alonso <alonsohernandez@tugraz.at>"]
-description = "Algorithm to reduce bifiltered graphs while maintaining the topology of their clique complex."
+description = "Algorithms to reduce bifiltered graphs while maintaining the topology of their clique complex."
 license = "MIT OR Apache-2.0"
 readme = "README.md"
-version = "0.1.0"
+homepage = "https://github.com/aj-alonso/filtration_domination"
+repository = "https://github.com/aj-alonso/filtration_domination"
+version = "0.0.1"
 edition = "2021"
 
 [dependencies]
