@@ -1,5 +1,4 @@
 # Filtration-domination algorithms
-Copyright 2022 TU Graz
 
 ## Summary
 
