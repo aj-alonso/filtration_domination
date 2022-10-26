@@ -118,7 +118,7 @@ pub enum MemoryError {
 fn memory_consumption_check(iteration: usize) -> Result<(), MemoryError> {
     if iteration % 1000 == 0 {
         let proc_info = procfs::process::Process::myself()?;
-        if proc_info.stat()?.vsize > MAXIMUM_MEMORY_BYTES {
+        if proc_info.stat()?.rss > MAXIMUM_MEMORY_BYTES {
             return Err(MemoryError::MemoryLimit);
         }
     }

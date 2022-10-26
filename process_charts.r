@@ -235,25 +235,28 @@ do_asymptotics <- function() {
   ggsave("charts/compare_asymptotics_uniform.pdf", width = asympt_width, height = asympt_width)
 }
 
-args <- commandArgs(trailingOnly=TRUE)
+commands <- c("orders", "removal", "mpfree", "multiple-iterations", "asymptotics", "random-densities")
 
-if (length(args)==0) {
-  stop("Give me a chart to do.", call.=FALSE)
+# Use all commands by default, unless some are given as arguments.
+args <- commandArgs(trailingOnly=TRUE)
+if (length(args) > 0) {
+  commands <- args
 }
 
-command <- args[1]
-if (command == "orders") {
-  do_orders()
-} else if (command == "removal") {
-  do_removals()
-} else if (command == "mpfree") {
-  do_mpfree()
-} else if (command == "multiple-iterations") {
-  do_multiple_iterations()
-} else if (command == "asymptotics") {
-  do_asymptotics()
-} else if (command == "random-densities") {
-  do_random_densities()
-} else {
-  stop("Unknown command.", call.= FALSE)
+for (command in commands) {
+  if (command == "orders") {
+    do_orders()
+  } else if (command == "removal") {
+    do_removals()
+  } else if (command == "mpfree") {
+    do_mpfree()
+  } else if (command == "multiple-iterations") {
+    do_multiple_iterations()
+  } else if (command == "asymptotics") {
+    do_asymptotics()
+  } else if (command == "random-densities") {
+    do_random_densities()
+  } else {
+    stop("Unknown command.", call.= FALSE)
+  }
 }
