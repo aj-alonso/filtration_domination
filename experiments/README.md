@@ -4,12 +4,12 @@ This directory has the required code to reproduce the experiments we show in the
 paper. It also includes the scripts that generate all tables of the paper.
 
 It consists of two main parts:
-- `experiment_runner`, which is a Rust application that use the
+- `experiment_runner`, which is a Rust application that uses the
   `filtration-domination` Rust library of the parent directory and runs the
-  experiments. The data from the experiments in saved in `.csv` files in the
+  experiments. The data from the experiments is saved in `.csv` files in the
   `charts` directory.
 
-- `process_charts.r` is an R script that reads all `.csv` files and generates
+- `process_charts.r` is an R script that reads all the `.csv` files and generates
   automatically the LaTeX tables included in the paper.
 
 All this is glued together with the `run_experiments.sh` shell script.
@@ -18,7 +18,8 @@ In addition, the `single_parameter` directory contains the code of the paper
 "Swap, Shift and Trim to Edge Collapse a Filtration" by Marc Glisse and
 Siddharth Pritam. This code is part of the GUDHI library, but has been included
 here (with a little adaptation to be able to use it from `experiment_runner`) for
-convenience. This is only use to include a comparison between the multi-parameter case and the single-parameter case.
+convenience. This is only used to include a comparison between the
+multi-parameter case and the single-parameter case.
 
 ## Requirements
 
