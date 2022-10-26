@@ -98,7 +98,7 @@ do_random_densities <- function() {
   random_densities <- all_random_densities %>%
     # Select reverse lexicographic orders.
     dplyr::filter(Order == "RevLex") %>%
-    dplyr::filter(Structure == "no-densities" | Structure == "random") %>%
+    dplyr::filter(Structure == "no-densities" | Structure == "random" | Structure == "normal") %>%
     mutate(Ratio = 1. - After / Before) %>%
     mutate(DominatedRatio = 1. - Dominated / Before) %>%
     mutate(Ratio = if_else(Time > TIMEOUT, NA_real_, Ratio)) %>%
@@ -107,7 +107,7 @@ do_random_densities <- function() {
     mutate(DominatedRatio = scales::percent(DominatedRatio, accuracy = 0.2, suffix = "\\%")) %>%
     select(Dataset, Structure, Ratio, DominatedRatio) %>%
     pivot_wider(names_from = Structure, values_from = c(Ratio, DominatedRatio)) %>%
-    relocate(Dataset, "DominatedRatio_no-densities", "Ratio_no-densities", "DominatedRatio_random" , "Ratio_random")
+    relocate(Dataset, "DominatedRatio_normal", "Ratio_normal", "DominatedRatio_no-densities", "Ratio_no-densities", "DominatedRatio_random" , "Ratio_random")
 
   options(knitr.kable.NA = '---')
   kbl(random_densities, "latex",
@@ -115,19 +115,20 @@ do_random_densities <- function() {
       escape = F,
       label = "random_densities",
       caption = "Analysis of the removed edges under
-      changes to the structure of the grades. There are two groups of columns:
-      one where we artificially zero out all the density values, and one where we
-      replace them by random values sampled uniformly. ``Free at birth'' shows the
+      changes to the structure of the grades. There are three groups of columns:
+      the first one represents the original dataset with no modification to the densities,
+      in the second one we artificially zero out all the density values, and in the third one we
+      replace the densities by random values sampled uniformly. ``Free at birth'' shows the
       percentage of edges that are not dominated when they appear (at their
       critical grade), and ``Removed'' is the percentage of edges removed after
       running our strong filtration-domination removal algorithm.",
-      col.names = c("Dataset", "Free at birth", "Removed", "Free at birth", "Removed"),
-      align = c("l", rep("r", 4)),
+      col.names = c("Dataset", "Free at birth", "Removed", "Free at birth", "Removed", "Free at birth", "Removed"),
+      align = c("l", rep("r", 6)),
       table.envir = "table*",
       position = "!h"
   ) %>%
-    kable_styling(latex_options = c("striped", "hold_position"), font_size = 9) %>%
-    add_header_above(c(" " = 1, "Zeroed densities" = 2, "Random densities" = 2)) %>%
+    kable_styling(latex_options = c("striped", "hold_position")) %>%
+    add_header_above(c(" " = 1, "Original densities" = 2, "Zeroed densities" = 2, "Random densities" = 2)) %>%
     cat(., file = "charts/compare_random_densities.tex")
 }
 
@@ -223,32 +224,27 @@ do_multiple_iterations <- function() {
 
 do_asymptotics <- function() {
   asymptotics_csv <- read.csv(file = "charts/compare_asymptotics.csv") %>%
-    mutate(Ratio = (After / Before) * 100) %>%
-    mutate(Vertices = Points * Points)
+    mutate(Ratio = (After / Before) * 100)
 
   asympt_width <- 4
 
-  torus_csv <- asymptotics_csv %>%
-    dplyr::filter(Dataset == "torus" & Algorithm == "Strong filtration-domination")
-  ggplot(torus_csv,
-         aes(x = Before, y = Time)) +
-    labs(x = "Edges", y = "Time (s)", title = "Torus") +
-    geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = FALSE) +
-    geom_point()
-
-  ggsave("charts/compare_asymptotics_torus.pdf", width = asympt_width, height = asympt_width)
-
-  uniform_csv <- asymptotics_csv %>%
-    dplyr::filter(Dataset == "uniform" & Algorithm == "Strong filtration-domination")
-  ggplot(uniform_csv,
-         aes(x = Before, y = Time)) +
-    labs(x = "Edges", y = "Time (s)", title = "Uniform") +
+  scale <- 0.03
+  asymptotics_csv %>%
+    dplyr::filter((Dataset == "uniform" | Dataset == "torus") & Algorithm == "Strong filtration-domination") %>%
+    ggplot(aes(x=Before,y=Time,color=Dataset, shape="Time"), size=3)+
+    geom_point()+
     geom_smooth(method = "lm",
                 formula = y ~ poly(x, 2),
                 se = FALSE) +
-    geom_point()
+    geom_point(aes(y = Ratio/scale, color = Dataset, shape="Ratio"), size=2) +
+    theme(legend.position = 'top') +
+    scale_y_continuous(sec.axis = sec_axis(~.*scale, name="Remaining edges %")) +
+    scale_shape_manual(values = c('Time' = 16, 'Ratio' = 17)) +
+    guides(color = guide_legend(nrow=2, byrow=TRUE, override.aes = list(linetype = 0)),
+           shape = guide_legend(nrow=2, byrow=TRUE)) +
+    labs(x="Edges", y="Time (s)", shape = "Measurement")
 
-  ggsave("charts/compare_asymptotics_uniform.pdf", width = asympt_width, height = asympt_width)
+  ggsave("charts/compare_asymptotics_all.pdf", width = asympt_width, height = asympt_width)
 }
 
 commands <- c("orders", "removal", "mpfree", "multiple-iterations", "asymptotics", "random-densities")
