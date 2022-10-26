@@ -3,7 +3,7 @@ use crate::{OneCriticalGrade, Value};
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::cmp::{max, Ordering};
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 /// Common functionality of an undirected edge. See [BareEdge] and [FilteredEdge].
@@ -291,6 +291,23 @@ impl<E: Edge> From<Vec<E>> for EdgeList<E> {
         let n_vertices = Self::count_vertices(&edges);
         Self { n_vertices, edges }
     }
+}
+
+pub fn write_edge_list<T: Value + Display, W: std::io::Write, const N: usize>(
+    edges: &EdgeList<FilteredEdge<OneCriticalGrade<T, N>>>,
+    writer: &mut W,
+) -> std::io::Result<()> {
+    writeln!(writer, "{}", edges.len())?;
+
+    for e in edges.edge_iter() {
+        write!(writer, "{} {}", e.edge.0, e.edge.1)?;
+        for i in 0..N {
+            write!(writer, " {}", e.grade.0[i])?;
+        }
+        writeln!(writer)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

@@ -83,6 +83,7 @@ dependencies = [
  "anyhow",
  "clap",
  "filtration-domination",
+ "rand",
  "thiserror",
 ]
 

@@ -1,5 +1,7 @@
 mod experiments;
 mod table;
+mod single_collapse;
+mod utils;
 
 use crate::experiments::orders::{compare_orders, OrderCli};
 use crate::table::{display, display_duration, Row, Table};
@@ -13,6 +15,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::Path;
 use std::time::Duration;
+use crate::experiments::removals::{compare_removals, RemovalCli};
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
 
@@ -25,6 +28,7 @@ const TIMEOUT_DURATION: Duration = Duration::from_secs(TIMEOUT_SECONDS);
 #[clap(author, version, about, long_about = None)]
 enum ExperimentCli {
     Order(OrderCli),
+    Removal(RemovalCli),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -138,6 +142,9 @@ fn main() -> anyhow::Result<()> {
     match opt {
         ExperimentCli::Order(opts) => {
             compare_orders(opts)?;
+        }
+        ExperimentCli::Removal(opts) => {
+            compare_removals(opts)?;
         }
     }
 
