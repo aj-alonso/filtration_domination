@@ -155,8 +155,9 @@ do_mpfree <- function() {
       booktabs = T,
       label = "mpfree",
       caption = "Impact of our algorithm as a preprocessing step for minimal presentations.
-      Inside each group of columns, the ``Build (s)'' column displays the time taken in seconds to build the clique bifiltration, and ``mpfree (s)'' the time taken to run \\texttt{mpfree}.
-      In addition, the ``Preprocessing (s)'' column displays the time taken to run our algorithm, and ``Speedup'' is the speedup compared to not doing preprocessing. The $\\infty$ symbol means
+      Inside each group of columns, the ``Build (s)'' column displays the time taken in seconds to build the clique bifiltration, ``mpfree (s)'' the time taken to run \\texttt{mpfree},
+      and ``Memory'' the maximum amount of memory used by the pipeline, over all the steps (including the preprocessing if applied).
+      In addition, the ``Removal (s)'' column displays the time taken to run our algorithm, and ``Speedup'' is the speedup compared to not doing preprocessing. The $\\infty$ symbol means
       that the pipeline ran out of memory, and in that
       case both the timing and speedup values are marked with an ``---''.",
       col.names = c("Dataset",
