@@ -19,6 +19,7 @@ use std::io::BufWriter;
 use std::path::Path;
 use std::time::Duration;
 use crate::experiments::multiple_iterations::{compare_multiple_iterations, MultipleIterationsCli};
+use crate::experiments::random_densities::{compare_random_densities, RandomDensitiesCli};
 
 const TABLE_OUTPUT_DIRECTORY: &str = "charts";
 
@@ -34,7 +35,8 @@ enum ExperimentCli {
     Removal(RemovalCli),
     Mpfree(MpfreeCli),
     Asymptotics(AsymptoticCli),
-    MultipleIterations(MultipleIterationsCli)
+    MultipleIterations(MultipleIterationsCli),
+    RandomDensities(RandomDensitiesCli)
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, clap::ArgEnum)]
@@ -175,6 +177,9 @@ fn main() -> anyhow::Result<()> {
         }
         ExperimentCli::MultipleIterations(opts) => {
             compare_multiple_iterations(opts)?;
+        }
+        ExperimentCli::RandomDensities(opts) => {
+            compare_random_densities(opts)?;
         }
     }
 

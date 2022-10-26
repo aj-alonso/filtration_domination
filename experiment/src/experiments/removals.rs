@@ -1,4 +1,4 @@
-use crate::single_collapse::{run_single_parameter_edge_collapse, SingleCollapser};
+use crate::single_collapse::{run_single_parameter_edge_collapse};
 use crate::utils::{delete_densities, forget_densities, normalize};
 use crate::{display, display_duration, save_table, CliDataset, Row, Table, ALL_DATASETS};
 use clap::Args;
@@ -23,7 +23,7 @@ pub struct RemovalCli {
 enum RemovalPolicy {
     StrongFiltrationDomination,
     FiltrationDomination,
-    SingleParameterGlisse,
+    SingleParameter,
 }
 
 impl RemovalPolicy {
@@ -31,7 +31,7 @@ impl RemovalPolicy {
         match self {
             RemovalPolicy::StrongFiltrationDomination => "Single Vertex",
             RemovalPolicy::FiltrationDomination => "Geom",
-            RemovalPolicy::SingleParameterGlisse => "Glisse",
+            RemovalPolicy::SingleParameter => "Glisse",
         }
     }
 }
@@ -39,7 +39,7 @@ impl RemovalPolicy {
 const ALL_REMOVAL_POLICIES: [RemovalPolicy; 3] = [
     RemovalPolicy::StrongFiltrationDomination,
     RemovalPolicy::FiltrationDomination,
-    RemovalPolicy::SingleParameterGlisse,
+    RemovalPolicy::SingleParameter,
 ];
 
 impl std::fmt::Display for RemovalPolicy {
@@ -98,7 +98,7 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
             true,
         )?;
         let mut single_parameter_edges = delete_densities(&edges);
-        let mut single_parameter_edges = normalize(&mut single_parameter_edges);
+        let single_parameter_edges = normalize(&mut single_parameter_edges);
 
         let mut zero_density_edges = edges.clone();
         forget_densities(&mut zero_density_edges);
@@ -122,9 +122,8 @@ pub fn compare_removals(opts: RemovalCli) -> anyhow::Result<()> {
                         remove_filtration_dominated(&mut edges, EdgeOrder::ReverseLexicographic);
                     (resulting_edges.len(), start.elapsed())
                 }
-                RemovalPolicy::SingleParameterGlisse => run_single_parameter_edge_collapse(
-                    &single_parameter_edges,
-                    SingleCollapser::Glisse,
+                RemovalPolicy::SingleParameter => run_single_parameter_edge_collapse(
+                    &single_parameter_edges
                 )?,
             };
 

@@ -37,6 +37,13 @@ pub fn random_densities<VF: Value + SampleUniform>(
     }
 }
 
+pub fn zero_grades<VF: Value>(edge_list: &mut EdgeList<FilteredEdge<OneCriticalGrade<VF, 2>>>) {
+    for edge in edge_list.edges_mut() {
+        edge.grade.0[0] = VF::zero();
+        edge.grade.0[1] = VF::zero();
+    }
+}
+
 pub fn critical_values<VF: Value, const N: usize>(
     edges: &mut [FilteredEdge<OneCriticalGrade<VF, N>>],
 ) -> Vec<OneCriticalGrade<usize, N>> {
