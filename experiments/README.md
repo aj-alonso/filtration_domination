@@ -14,24 +14,27 @@ It consists of two main parts:
 
 All this is glued together with the `run_experiments.sh` shell script.
   
-In addition, the `single_parameter` directory contains the code of the paper
-"Swap, Shift and Trim to Edge Collapse a Filtration" by Marc Glisse and
-Siddharth Pritam. This code is part of the GUDHI library, but has been included
-here (with a little adaptation to be able to use it from `experiment_runner`) for
-convenience. This is only used to include a comparison between the
-multi-parameter case and the single-parameter case.
+In addition, the `single_parameter` directory contains a little utility to
+collapse a single-parameter filtration using the algorithm of the paper "Swap,
+Shift and Trim to Edge Collapse a Filtration" by Marc Glisse and Siddharth
+Pritam, as implemented in the [GUDHI library](https://gudhi.inria.fr/). This
+utility is used by `experiment_runner` to compare the multi-parameter case and
+the single-parameter case.
 
 ## Requirements
 
-We describe the preparations to setup the environment to run the experiments.
+We describe the preparations to set up the environment to run the experiments.
 You can also skip most of this if you are using Docker, see [below](#Docker) for
 further details.
 
 To be able to run the experiments you need the following dependencies:
 - The `mpfree` executable somewhere along your PATH.
-- The `single_parameter` executable (found after compiling the code in the `single_parameter` folder) somewhere along your PATH.
+- The [GUDHI](https://gudhi.inria.fr) library, at least version 3.6.0,
+  installed, in order to compile the `single_parameter` executable.
+- The `single_parameter` executable (found after compiling the code in the
+  `single_parameter` folder) somewhere along your PATH.
 
-To install the `single_parameter` executable:
+To build the `single_parameter` executable:
 
 ``` shell
 cd single_parameter

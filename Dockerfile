@@ -16,9 +16,14 @@ RUN git clone https://bitbucket.org/mkerber/mpfree.git
 WORKDIR mpfree/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make
 
+# Build GUDHI
+ADD https://github.com/GUDHI/gudhi-devel/releases/download/tags%2Fgudhi-release-3.6.0/gudhi.3.6.0.tar.gz /opt/
+WORKDIR /opt
+RUN tar -xzf gudhi.3.6.0.tar.gz && cd gudhi.3.6.0 && mkdir build && cd build && cmake .. && make install
+
+# Build single-parameter utility.
 COPY experiments/single_parameter/CMakeLists.txt \
-    experiments/single_parameter/single_parameter_glisse_pritam.cpp \
-    experiments/single_parameter/Flag_complex_edge_collapser.h /single_parameter/
+    experiments/single_parameter/single_parameter_glisse_pritam.cpp /single_parameter/
 WORKDIR /single_parameter/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make
 

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <chrono>
 
-#include "Flag_complex_edge_collapser.h"
+#include <gudhi/Flag_complex_edge_collapser.h>
 
 using uu = long int;
 
