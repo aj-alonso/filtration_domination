@@ -12,6 +12,7 @@ use crate::distance_matrix::input::read_lower_triangular_distance_matrix;
 use crate::distance_matrix::output::write_lower_triangular_distance_matrix;
 use crate::distance_matrix::DistanceMatrix;
 use crate::edges::{EdgeList, FilteredEdge};
+use crate::points::input::read_point_cloud;
 use crate::points::PointCloud;
 use crate::{OneCriticalGrade, Value};
 
@@ -107,6 +108,19 @@ pub fn get_dataset_distance_matrix(
                 || sample_distance_matrix(n_points, sample_random_points::<f64, 2>),
                 use_cache,
             )
+        }
+        Dataset::NoisyTorus => {
+            let filepath = dataset_directory.join("noisy_torus.txt");
+            if !filepath.is_file() {
+                return Err(DatasetError::FileNotFound(format!(
+                    "{}",
+                    filepath.display()
+                )));
+            }
+            let file = fs::File::open(filepath)?;
+            let reader = BufReader::new(&file);
+            let point_cloud: PointCloud<OrderedFloat<f64>, 2> = read_point_cloud(reader)?;
+            Ok(point_cloud.distance_matrix())
         }
     }
 }

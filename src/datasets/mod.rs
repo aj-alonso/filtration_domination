@@ -32,15 +32,26 @@ pub enum Dataset {
     /// The dragon dataset from <https://github.com/n-otter/PH-roadmap>.
     Dragon,
     /// A circle in R^2.
-    Circle { n_points: usize },
+    Circle {
+        n_points: usize,
+    },
     /// A noisy sphere in R^3.
-    Sphere { n_points: usize },
+    Sphere {
+        n_points: usize,
+    },
     /// A torus sphere in R^3.
-    Torus { n_points: usize },
+    Torus {
+        n_points: usize,
+    },
     /// A swiss roll, that is, a plane rolled up in a spiral in R^3.
-    SwissRoll { n_points: usize },
+    SwissRoll {
+        n_points: usize,
+    },
     /// Points sampled uniformly from a square in the plane.
-    Uniform { n_points: usize },
+    Uniform {
+        n_points: usize,
+    },
+    NoisyTorus,
 }
 
 impl std::fmt::Display for Dataset {
@@ -75,6 +86,9 @@ impl std::fmt::Display for Dataset {
             }
             Dataset::Uniform { n_points } => {
                 write!(f, "uniform({n_points})")
+            }
+            Dataset::NoisyTorus => {
+                write!(f, "noisy_torus")
             }
         }
     }

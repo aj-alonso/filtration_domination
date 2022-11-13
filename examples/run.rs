@@ -60,6 +60,7 @@ enum Dataset {
     Circle,
     Torus,
     SwissRoll,
+    NoisyTorus,
 }
 
 impl Dataset {
@@ -85,6 +86,7 @@ impl Dataset {
             Dataset::SwissRoll => datasets::Dataset::SwissRoll {
                 n_points: n_points.unwrap_or(200),
             },
+            Dataset::NoisyTorus => datasets::Dataset::NoisyTorus,
         }
     }
 }
@@ -105,6 +107,7 @@ impl std::fmt::Display for Dataset {
                 Dataset::Circle => "circle",
                 Dataset::Torus => "torus",
                 Dataset::SwissRoll => "swiss roll",
+                Dataset::NoisyTorus => "noisy torus",
             }
         )
     }
