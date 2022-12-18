@@ -1,0 +1,14 @@
+[package]
+name = "filtration-domination-python"
+version = "0.0.3"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "filtration_domination"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.17.1", features = ["extension-module"] }
+filtration-domination = "0.0.1"
+ordered-float = "3.3.0"
