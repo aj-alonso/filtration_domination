@@ -56,7 +56,7 @@ fn gaussian_density_estimation(points: Vec<(f64, f64)>, bandwidth: f64) -> PyRes
 #[pymodule]
 fn filtration_domination(_py: Python, m: &PyModule) -> PyResult<()> {
     let utils = PyModule::new(_py, "utils")?;
-    m.add_function(wrap_pyfunction!(gaussian_density_estimation, m)?)?;
+    utils.add_function(wrap_pyfunction!(gaussian_density_estimation, m)?)?;
     m.add_submodule(utils)?;
 
     m.add_function(wrap_pyfunction!(remove_strongly_filtration_dominated, m)?)?;
