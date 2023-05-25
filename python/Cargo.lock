@@ -37,7 +37,7 @@ dependencies = [
 
 [[package]]
 name = "filtration-domination-python"
-version = "0.0.4"
+version = "0.1.0"
 dependencies = [
  "filtration-domination",
  "ordered-float 3.3.0",
