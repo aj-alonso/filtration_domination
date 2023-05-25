@@ -30,18 +30,25 @@ fn edge_list_to_vector(edge_list: &EdgeList<FilteredEdge<OneCriticalGrade<Ordere
     edges
 }
 
-#[pyfunction]
-fn remove_strongly_filtration_dominated(edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
+fn remove_strongly_filtration_dominated_original(edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
     let mut edge_list = vector_to_edge_list(edges);
     let reduced = ::filtration_domination::removal::remove_strongly_filtration_dominated(&mut edge_list, EdgeOrder::ReverseLexicographic);
     Ok(edge_list_to_vector(&reduced))
 }
 
 #[pyfunction]
-fn remove_filtration_dominated(edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
+fn remove_strongly_filtration_dominated(py: Python<'_>, edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
+    py.allow_threads(|| remove_strongly_filtration_dominated_original(edges))
+}
+
+fn remove_filtration_dominated_original(edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
     let mut edge_list = vector_to_edge_list(edges);
     let reduced = ::filtration_domination::removal::remove_filtration_dominated(&mut edge_list, EdgeOrder::ReverseLexicographic);
     Ok(edge_list_to_vector(&reduced))
+}
+#[pyfunction]
+fn remove_filtration_dominated(py: Python<'_>, edges: Vec<BifilteredEdge>) -> PyResult<Vec<BifilteredEdge>> {
+    py.allow_threads(|| remove_filtration_dominated_original(edges))
 }
 
 #[pyfunction]
@@ -54,7 +61,7 @@ fn gaussian_density_estimation(points: Vec<(f64, f64)>, bandwidth: f64) -> PyRes
 }
 
 #[pymodule]
-fn filtration_domination(_py: Python, m: &PyModule) -> PyResult<()> {
+fn filtration_domination(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     let utils = PyModule::new(_py, "utils")?;
     utils.add_function(wrap_pyfunction!(gaussian_density_estimation, m)?)?;
     m.add_submodule(utils)?;
