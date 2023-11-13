@@ -9,26 +9,19 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        target: [x86_64, universal2-apple-darwin]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build wheels - x86_64
+      - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64
+          target: ${{ matrix.target }}
           args: --release --out dist --sdist -m python/Cargo.toml
-      - name: Install built wheel - x86_64
-        run: |
-          pip install filtration-domination --no-index --find-links dist --force-reinstall
-          python -c "import filtration_domination"
-      - name: Build wheels - universal2
-        uses: PyO3/maturin-action@v1
-        with:
-          args: --release --universal2 --out dist -m python/Cargo.toml
-      - name: Install built wheel - universal2
+      - name: Install built wheel
         run: |
           pip install filtration-domination --no-index --find-links dist --force-reinstall
           python -c "import filtration_domination"
