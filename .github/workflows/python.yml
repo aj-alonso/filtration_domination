@@ -27,8 +27,17 @@ jobs:
           args: --release --out dist --sdist -m python/Cargo.toml
       - name: Install built wheel -- x86_64
         run: |
-          pip install dist/filtration_domination-0.1.0-cp37-abi3-macosx_10_12_x86_64.whl --force-reinstall
+          pip install filtration-domination --no-index --find-links dist --force-reinstall
           python -c "import filtration_domination"
+      - name: Build wheels - universal2
+        uses: PyO3/maturin-action@v1
+        with:
+          target: universal2-apple-darwin
+          args: --release --out dist -m python/Cargo.toml
+      - name: Install built wheel - universal2
+        run: |
+          pip install filtration-domination --no-index --find-links dist --force-reinstall
+          python -c "import crfs"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
