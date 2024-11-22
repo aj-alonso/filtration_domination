@@ -5,10 +5,7 @@ on:
 
 jobs:
   macos:
-    runs-on: macos-latest
-    # strategy:
-    #   matrix:
-    #     target: [x86_64, universal2-apple-darwin]
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
