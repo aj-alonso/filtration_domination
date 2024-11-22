@@ -9,6 +9,6 @@ name = "filtration_domination"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.19.3", features = ["abi3-py37", "extension-module"] }
+pyo3 = { version = "0.23.1", features = ["abi3-py37", "extension-module"] }
 filtration-domination = "0.0.1"
 ordered-float = "3.3.0"
