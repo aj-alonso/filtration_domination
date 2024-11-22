@@ -34,7 +34,7 @@ jobs:
           args: --release --universal2 --out dist -m python/Cargo.toml
       - name: Install built wheel - universal2
         run: |
-          pip install dist/filtration-domination-*universal2.whl --force-reinstall
+          pip install filtration-domination --no-index --find-links dist --force-reinstall
           python -c "import filtration_domination"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
