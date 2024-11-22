@@ -34,7 +34,7 @@ jobs:
       - name: Install built wheel - universal2
         run: |
           pip install filtration-domination --no-index --find-links dist --force-reinstall
-          python -c "import crfs"
+          python -c "import filtration_domination"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
