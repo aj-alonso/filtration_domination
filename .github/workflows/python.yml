@@ -14,27 +14,20 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.9
+          architecture: x64
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
-      # - name: Build wheels - x86_64
-      #   uses: messense/maturin-action@v1
-      #   with:
-      #     target: x86_64
-      #     args: --release --out dist --sdist -m python/Cargo.toml
-      # - name: Install built wheel - x86_64
-      #   run: |
-      #     pip install dist/filtration_domination-0.1.0-cp37-abi3-macosx_10_12_x86_64.whl --force-reinstall
-      #     python -c "import filtration_domination"
-      - name: Build wheels - universal2
+      - name: Build wheels -- x86_64
         uses: messense/maturin-action@v1
         with:
-          args: --release --universal2 --out dist -m python/Cargo.toml
-      - name: Install built wheel - universal2
+          target: x86_64
+          args: --release --out dist --sdist -m python/Cargo.toml
+      - name: Install built wheel -- x86_64
         run: |
-          pip install filtration-domination --no-index --find-links dist --force-reinstall
+          pip install dist/filtration_domination-0.1.0-cp37-abi3-macosx_10_12_x86_64.whl --force-reinstall
           python -c "import filtration_domination"
       - name: Upload wheels
         uses: actions/upload-artifact@v3
